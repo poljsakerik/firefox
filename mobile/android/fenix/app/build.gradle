@@ -46,7 +46,7 @@ android {
             arg("room.schemaLocation", "$projectDir/schemas".toString())
         }
 
-        applicationId "org.mozilla"
+        applicationId "app.mirlumi.browser"
         minSdk config.minSdkVersion
         targetSdk config.targetSdkVersion
         versionCode 1
@@ -66,7 +66,7 @@ android {
         // This should be the base URL used to call the AMO API.
         buildConfigField "String", "AMO_SERVER_URL", "\"https://services.addons.mozilla.org\""
 
-        def deepLinkSchemeValue = "fenix-dev"
+        def deepLinkSchemeValue = "mirlumi-dev"
         buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
 
         manifestPlaceholders = [
@@ -107,14 +107,14 @@ android {
         debug {
             shrinkResources = false
             minifyEnabled = false
-            applicationIdSuffix ".fenix.debug"
+            applicationIdSuffix ".dev"
             resValue "bool", "IS_DEBUG", "true"
             pseudoLocalesEnabled = true
         }
         nightly releaseTemplate >> {
-            applicationIdSuffix ".fenix"
+            applicationIdSuffix ".nightly"
             buildConfigField "boolean", "USE_RELEASE_VERSIONING", "true"
-            def deepLinkSchemeValue = "fenix-nightly"
+            def deepLinkSchemeValue = "mirlumi-nightly"
             buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
             manifestPlaceholders.putAll([
                     "deepLinkScheme": deepLinkSchemeValue
@@ -122,35 +122,20 @@ android {
         }
         beta releaseTemplate >> {
             buildConfigField "boolean", "USE_RELEASE_VERSIONING", "true"
-            applicationIdSuffix ".firefox_beta"
-            def deepLinkSchemeValue = "fenix-beta"
+            applicationIdSuffix ".beta"
+            def deepLinkSchemeValue = "mirlumi-beta"
             buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
             manifestPlaceholders.putAll([
-                    // This release type is meant to replace Firefox (Beta channel) and therefore needs to inherit
-                    // its sharedUserId for all eternity. See:
-                    // https://searchfox.org/mozilla-esr68/search?q=moz_android_shared_id&case=false&regexp=false&path=
-                    // Shipping an app update without sharedUserId can have
-                    // fatal consequences. For example see:
-                    //  - https://issuetracker.google.com/issues/36924841
-                    //  - https://issuetracker.google.com/issues/36905922
-                    "sharedUserId": "org.mozilla.firefox.sharedID",
+                    "sharedUserId": "app.mirlumi.browser.sharedID",
                     "deepLinkScheme": deepLinkSchemeValue,
             ])
         }
         release releaseTemplate >> {
             buildConfigField "boolean", "USE_RELEASE_VERSIONING", "true"
-            applicationIdSuffix ".firefox"
-            def deepLinkSchemeValue = "fenix"
+            def deepLinkSchemeValue = "mirlumi"
             buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
             manifestPlaceholders.putAll([
-                    // This release type is meant to replace Firefox (Release channel) and therefore needs to inherit
-                    // its sharedUserId for all eternity. See:
-                    // https://searchfox.org/mozilla-esr68/search?q=moz_android_shared_id&case=false&regexp=false&path=
-                    // Shipping an app update without sharedUserId can have
-                    // fatal consequences. For example see:
-                    //  - https://issuetracker.google.com/issues/36924841
-                    //  - https://issuetracker.google.com/issues/36905922
-                    "sharedUserId": "org.mozilla.firefox.sharedID",
+                    "sharedUserId": "app.mirlumi.browser.sharedID",
                     "deepLinkScheme": deepLinkSchemeValue,
             ])
         }
@@ -158,7 +143,7 @@ android {
             initWith buildTypes.nightly
             shrinkResources = false
             minifyEnabled = false
-            applicationIdSuffix ".fenix"
+            applicationIdSuffix ".benchmark"
             signingConfig = signingConfigs.debug
             debuggable false
             buildConfigField "boolean", "IS_BENCHMARK_BUILD", "true"
@@ -173,6 +158,8 @@ android {
     }
 
     androidResources {
+        // Keep this in step with getSupportedLocales(). Android Components' strings are filtered too.
+        localeFilters += ["en", "sl"]
         // All JavaScript code used internally by GeckoView is packaged in a
         // file called omni.ja. If this file is compressed in the APK,
         // GeckoView must uncompress it before it can do anything else which
@@ -803,7 +790,12 @@ def getSupportedLocales() {
 
     fileTree("src/main/res").visit { FileVisitDetails details ->
         if (details.file.path.endsWith("${File.separator}strings.xml")) {
-            def languageCode = details.file.parent.tokenize(File.separator).last().replaceAll('values-', '').replaceAll('-r', '-')
+            // Mirlumi ships English and Slovenian, the two languages with reviewed product text.
+            def resourceDirectory = details.file.parent.tokenize(File.separator).last()
+            if (resourceDirectory != "values" && resourceDirectory != "values-sl") {
+                return
+            }
+            def languageCode = resourceDirectory.replaceAll('values-', '').replaceAll('-r', '-')
             languageCode = (languageCode == "values") ? "en-US" : languageCode
             foundLocales.append("\"").append(languageCode).append("\"").append(",")
         }
