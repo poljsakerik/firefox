@@ -209,10 +209,10 @@ class SettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragment 
                 components.core.store.state.translationEngine.isEngineSupported == true
 
         findPreference<Preference>(getPreferenceKey(R.string.pref_key_page_summaries))?.isVisible =
-            components.settings.shakeToSummarizeFeatureFlagEnabled
+            MirlumiConfig.aiServicesEnabled && components.settings.shakeToSummarizeFeatureFlagEnabled
 
         findPreference<Preference>(getPreferenceKey(R.string.pref_key_ai_controls))?.isVisible =
-            requireComponents.settings.aiControlsFeatureFlagEnabled
+            MirlumiConfig.aiServicesEnabled && requireComponents.settings.aiControlsFeatureFlagEnabled
 
         if (requireComponents.settings.accountSettingsNewUi) {
             findPreference<PreferenceCategory>(getPreferenceKey(R.string.pref_key_account_category))

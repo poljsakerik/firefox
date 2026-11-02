@@ -3,6 +3,16 @@
 <resources>
     <color name="ic_launcher_background">#2F7FE8</color>
     <color name="fx_mobile_splashscreen_background">#FFFFFF</color>
+    <color name="novaViolet0">#FFE6F4FE</color>
+    <color name="novaViolet10">#FFC4E5FC</color>
+    <color name="novaViolet20">#FF9DD0FA</color>
+    <color name="novaViolet30">#FF6DB4F8</color>
+    <color name="novaViolet40">#FF4A9CF5</color>
+    <color name="novaViolet50">#FF2F7FE8</color>
+    <color name="novaViolet60">#FF2465C1</color>
+    <color name="novaViolet70">#FF1A4C9C</color>
+    <color name="novaViolet80">#FF10306A</color>
+    <color name="novaViolet90">#FF0B2148</color>
     <color name="fx_mobile_primary">#2465C1</color>
     <color name="fx_mobile_primary_container">#C4E5FC</color>
     <color name="fx_mobile_primary_inverse">#C4E5FC</color>

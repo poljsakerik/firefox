@@ -16,6 +16,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import org.mozilla.fenix.GleanMetrics.CustomizeHome
 import org.mozilla.fenix.GleanMetrics.Events
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.Components
 import org.mozilla.fenix.components.appstate.AppAction
@@ -76,11 +77,13 @@ class HomeSettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragm
         }
 
         requirePreference<CheckBoxPreference>(R.string.pref_key_enable_contile).apply {
+            isVisible = false
             isChecked = fenixSettings.showContileFeature
             onPreferenceChangeListener = createMetricPreferenceChangeListener("contile")
         }
 
         requirePreference<SwitchPreferenceCompat>(R.string.pref_key_privacy_report).apply {
+            isVisible = MirlumiConfig.protectionClaimsEnabled
             if (fenixSettings.longfoxEnabled) title = resources.getString(R.string.help_catch_trackers)
             isChecked = fenixSettings.showPrivacyReportFeature
             onPreferenceChangeListener =

@@ -20,6 +20,7 @@ import mozilla.components.compose.menu.store.MenuEvent
 import mozilla.components.compose.menu.ui.MenuItemIconRes
 import mozilla.components.compose.menu.ui.MenuItemState
 import mozilla.components.ui.icons.R as iconsR
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.menu.MenuFragmentDirections
 import org.mozilla.fenix.components.menu.MenuHost
@@ -55,7 +56,7 @@ class SummarizePageMenuItemProvider(
 
     override val itemFlow: StateFlow<MenuItem?> =
         combine(browserStore.stateFlow, isPageEligible) { state, isEligible ->
-                state.summarizePageItem(isPageEligible = isEligible)
+                state.summarizePageItem(isPageEligible = isEligible).takeIf { MirlumiConfig.aiServicesEnabled }
             }
             .stateIn(
                 scope = scope,

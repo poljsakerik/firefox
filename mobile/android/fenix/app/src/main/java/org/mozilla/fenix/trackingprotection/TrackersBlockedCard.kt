@@ -56,6 +56,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mozilla.components.compose.base.modifier.thenConditional
 import mozilla.components.ui.icons.R as iconsR
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.theme.FirefoxTheme
 
@@ -93,6 +94,8 @@ fun TrackersBlockedCard(
     longfoxEnabled: Boolean = false,
     showLongfoxAnimation: Boolean = false,
 ) {
+    if (!MirlumiConfig.protectionClaimsEnabled) return
+
     var isPlayingAnimation by remember { mutableStateOf(false) }
     val foxOffsetY = remember { Animatable(1f) }
     var isReversing by remember { mutableStateOf(false) }
