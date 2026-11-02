@@ -17,7 +17,7 @@ object FeatureFlags {
     const val PULL_TO_REFRESH_ENABLED = true
 
     /** Allows users to enable Firefox Suggest. */
-    const val FX_SUGGEST = true
+    const val FX_SUGGEST = false
 
     /**
      * Disables the Onboarding feature for debug builds by default. Set this to `true` if you need to access the
@@ -25,5 +25,5 @@ object FeatureFlags {
      *
      * ⚠️ DO NOT MODIFY THIS FLAG IN PRODUCTION.
      */
-    val onboardingFeatureEnabled = !Config.channel.isDebug
+    val onboardingFeatureEnabled = true
 }

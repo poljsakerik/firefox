@@ -47,6 +47,7 @@ features:
               secondary-button-label: nova_onboarding_negative_button
 
             marketing:
+              enabled: false
               card-type: marketing-data
               ordering: 20
               title: nova_onboarding_marketing_title

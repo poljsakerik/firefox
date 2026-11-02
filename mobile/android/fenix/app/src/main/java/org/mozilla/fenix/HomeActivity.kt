@@ -1473,7 +1473,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, Crash
                 )
             }
 
-        if (shouldShowOnboarding) {
+        if (shouldShowOnboarding && BuildConfig.TELEMETRY) {
             InstallReferrerHandlingService(applicationContext).start()
         }
 

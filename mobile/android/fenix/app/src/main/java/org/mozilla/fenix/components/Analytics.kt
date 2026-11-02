@@ -91,15 +91,17 @@ class Analytics(
 
         // The name "Fenix" here matches the product name on Socorro and is unrelated to the actual app name:
         // https://bugzilla.mozilla.org/show_bug.cgi?id=1523284
-        val socorroService =
-            MozillaSocorroService(
-                context,
-                appName = "Fenix",
-                vendor = MOZ_APP_VENDOR,
-                releaseChannel = MOZ_UPDATE_CHANNEL,
-                distributionId = distributionId,
-            )
-        services.add(socorroService)
+        if (BuildConfig.CRASH_REPORTING) {
+            val socorroService =
+                MozillaSocorroService(
+                    context,
+                    appName = "Fenix",
+                    vendor = MOZ_APP_VENDOR,
+                    releaseChannel = MOZ_UPDATE_CHANNEL,
+                    distributionId = distributionId,
+                )
+            services.add(socorroService)
+        }
 
         val intent =
             Intent(context, HomeActivity::class.java).apply {
@@ -141,7 +143,7 @@ class Analytics(
                         serverEndpoint = gleanServerEndpoint,
                     )
                 ),
-            shouldPrompt = CrashReporter.Prompt.ALWAYS,
+            shouldPrompt = CrashReporter.Prompt.NEVER,
             promptConfiguration =
                 CrashReporter.PromptConfiguration(
                     appName = context.getString(R.string.app_name),

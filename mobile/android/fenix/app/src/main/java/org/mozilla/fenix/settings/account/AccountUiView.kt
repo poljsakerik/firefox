@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import mozilla.components.concept.fetch.Client
 import mozilla.components.concept.sync.Profile
 import mozilla.components.service.fxa.manager.FxaAccountManager
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.settings.requirePreference
 
@@ -40,6 +41,14 @@ class AccountUiView(
      * and logged-in but needs to re-authenticate.
      */
     fun updateAccountUIState(context: Context, profile: Profile?) {
+        if (!MirlumiConfig.accountsEnabled) {
+            preferenceSignIn.isVisible = false
+            preferenceFirefoxAccount.isVisible = false
+            preferenceFirefoxAccountAuthError.isVisible = false
+            accountPreferenceCategory.isVisible = false
+            return
+        }
+
         val account = accountManager.authenticatedAccount()
 
         // Signed-in, no problems.

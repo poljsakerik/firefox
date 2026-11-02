@@ -53,7 +53,7 @@
 
     <!-- Needed to get distribution information from partners.
     This is NOT required for the adjust plugin. -->
-    <uses-permission android:name="com.adjust.preinstall.READ_PERMISSION"/>
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <uses-permission android:name="${applicationId}.permission.PROFILER_INTERNAL" />
 
@@ -588,15 +588,6 @@
               first matching filter per activity, and a scheme-only match marks the app as a generic
               browser that is excluded from App Links resolution.
             -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" />
-                <data android:host="accounts.firefox.com" />
-                <data android:pathPrefix="/pair" />
-            </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

@@ -219,17 +219,6 @@ private fun BodyText(
                 lineTwoText.updateFirstPlaceholder(lineTwoLinkText),
                 bodyTwoLinkState,
             )
-
-            val bodyThreeLinkState =
-                LinkTextState(
-                    text = lineThreeLinkText,
-                    url = "", // No URL
-                    onClick = { _ -> eventHandler.onManagePrivacyPreferencesLinkClicked() },
-                )
-            BodyLinkText(
-                lineThreeText.updateFirstPlaceholder(lineThreeLinkText),
-                bodyThreeLinkState,
-            )
         }
     }
 }

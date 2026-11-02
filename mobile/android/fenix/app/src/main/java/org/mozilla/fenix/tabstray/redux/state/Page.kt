@@ -4,6 +4,8 @@
 
 package org.mozilla.fenix.tabstray.redux.state
 
+import org.mozilla.fenix.MirlumiConfig
+
 /** The different pages in the Tab Manager. */
 enum class Page {
 
@@ -30,7 +32,7 @@ enum class Page {
                 PrivateTabs,
                 NormalTabs,
                 TabGroups.takeIf { shouldShowTabGroupsPage },
-                SyncedTabs,
+                SyncedTabs.takeIf { MirlumiConfig.accountsEnabled },
             )
 
         /**

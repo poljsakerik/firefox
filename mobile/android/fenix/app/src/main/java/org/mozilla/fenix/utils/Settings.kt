@@ -725,7 +725,7 @@ class Settings(
     var isTelemetryEnabled by
         booleanPreference(
             appContext.getPreferenceKey(R.string.pref_key_telemetry),
-            default = true,
+            default = false,
         )
 
     var isMarketingTelemetryEnabled by
@@ -854,14 +854,14 @@ class Settings(
     var isDailyUsagePingEnabled by
         booleanPreference(
             appContext.getPreferenceKey(R.string.pref_key_daily_usage_ping),
-            default = isTelemetryEnabled,
+            default = false,
             persistDefaultIfNotExists = true,
         )
 
     var isExperimentationEnabled by
         booleanPreference(
             appContext.getPreferenceKey(R.string.pref_key_experimentation_v2),
-            default = isTelemetryEnabled,
+            default = false,
         )
 
     /**
@@ -2374,7 +2374,7 @@ class Settings(
     var showContileFeature by
         booleanPreference(
             key = appContext.getPreferenceKey(R.string.pref_key_enable_contile),
-            default = true,
+            default = false,
         )
 
     /** Blocklist used to filter items from the home screen that have previously been removed. */

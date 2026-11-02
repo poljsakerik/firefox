@@ -56,6 +56,7 @@ import mozilla.components.service.fxa.manager.AccountState
 import mozilla.components.service.fxa.manager.AccountState.AuthenticationProblem
 import mozilla.components.service.fxa.store.Account
 import mozilla.components.ui.icons.R as iconsR
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.menu.MenuAccessPoint
 import org.mozilla.fenix.components.menu.MenuDialogTestTag.DESKTOP_SITE_OFF
@@ -317,11 +318,13 @@ fun MainMenu(
         )
 
         MenuGroup {
-            MozillaAccountMenuItem(
-                account = account,
-                accountState = accountState,
-                onClick = onMozillaAccountButtonClick,
-            )
+            if (MirlumiConfig.accountsEnabled) {
+                MozillaAccountMenuItem(
+                    account = account,
+                    accountState = accountState,
+                    onClick = onMozillaAccountButtonClick,
+                )
+            }
 
             if (accessPoint == MenuAccessPoint.Home) {
                 MenuItem(

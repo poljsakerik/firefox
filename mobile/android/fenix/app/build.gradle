@@ -334,51 +334,23 @@ androidComponents {
 // -------------------------------------------------------------------------------------------------
 
 android.defaultConfig.with {
-    buildConfigField 'boolean', 'CRASH_REPORTING', 'true'
-    buildConfigField 'boolean', 'TELEMETRY', 'true'
-
-    // Reading the sentry token from a local file (if it exists). In a release task on taskcluster it will be available.
+    // Mirlumi Browser sends nothing to Mozilla or its partners, whatever local files exist.
+    buildConfigField 'boolean', 'CRASH_REPORTING', 'false'
+    buildConfigField 'boolean', 'TELEMETRY', 'false'
     buildConfigField 'String', 'SENTRY_TOKEN', 'null'
-    try {
-        def token = new File("${rootDir}/.sentry_token").text.trim()
-        buildConfigField 'String', 'SENTRY_TOKEN', '"' + token + '"'
-    } catch (FileNotFoundException ignored) {}
+    buildConfigField 'String', 'ADJUST_TOKEN', 'null'
+    buildConfigField 'String', 'NIMBUS_ENDPOINT', 'null'
 
     // Setting buildDate with every build ID changes the generated BuildConfig and slows down the
     // build, so debug builds (overridden below) use a fixed string instead.
     def buildDate = LocalDateTime.parse(getBuildId(gradle.mozconfig.topobjdir, providers.environmentVariable("MOZ_BUILD_DATE").getOrNull()), DateTimeFormatter.ofPattern("yyyyMMddHHmmss")).toString()
     buildConfigField 'String', 'BUILD_DATE', '"' + buildDate + '"'
 
-    try {
-        def token = new File("${rootDir}/.adjust_token").text.trim()
-        buildConfigField 'String', 'ADJUST_TOKEN', '"' + token + '"'
-    } catch (FileNotFoundException ignored) {
-        buildConfigField 'String', 'ADJUST_TOKEN', 'null'
-    }
-
-    try {
-        def url = new File("${rootDir}/.nimbus").text.trim()
-        buildConfigField 'String', 'NIMBUS_ENDPOINT', '"' + url + '"'
-    } catch (FileNotFoundException ignored) {
-        buildConfigField 'String', 'NIMBUS_ENDPOINT', 'null'
-    }
-
     buildConfigField 'boolean', 'LEAKCANARY', 'false'
 
     // The remaining fields do not depend on the build type.
-    try {
-        def token = new File("${rootDir}/.mls_token").text.trim()
-        buildConfigField 'String', 'MLS_TOKEN', '"' + token + '"'
-    } catch (FileNotFoundException ignored) {
-        buildConfigField 'String', 'MLS_TOKEN', '""'
-    }
-
-    try {
-        def token = new File("${rootDir}/.gps_integrity_token").text.trim()
-        buildConfigField 'String', 'GPS_INTEGRITY_TOKEN', '"' + token + '"'
-    } catch (FileNotFoundException ignored) {
-        buildConfigField 'String', 'GPS_INTEGRITY_TOKEN', '""'
-    }
+    buildConfigField 'String', 'MLS_TOKEN', '""'
+    buildConfigField 'String', 'GPS_INTEGRITY_TOKEN', '""'
 
     if (gradle.hasProperty("localProperties.glean.custom.server.url")) {
         def url = gradle.getProperty("localProperties.glean.custom.server.url")
@@ -393,34 +365,12 @@ android.defaultConfig.with {
         buildConfigField 'Boolean', 'MOZILLA_OFFICIAL', 'false'
     }
 
-    try {
-        def token = new File("${rootDir}/.wallpaper_url").text.trim()
-        buildConfigField 'String', 'WALLPAPER_URL', '"' + token + '"'
-    } catch (FileNotFoundException ignored) {
-        buildConfigField 'String', 'WALLPAPER_URL', '""'
-    }
+    buildConfigField 'String', 'WALLPAPER_URL', '""'
     buildConfigField 'String', 'SECRET_SETTINGS_OVERRIDES', '""'
 }
 
 android.buildTypes.debug.with {
-    buildConfigField 'boolean', 'CRASH_REPORTING', 'false'
-    buildConfigField 'boolean', 'TELEMETRY', 'false'
     buildConfigField 'String', 'BUILD_DATE', '"debug build"'
-    buildConfigField 'String', 'SENTRY_TOKEN', 'null'
-    buildConfigField 'String', 'ADJUST_TOKEN', 'null'
-
-    if (gradle.hasProperty("localProperties.nimbus.remote-settings.url")) {
-        def url = gradle.getProperty("localProperties.nimbus.remote-settings.url")
-        buildConfigField 'String', 'NIMBUS_ENDPOINT', '"' + url + '"'
-    } else {
-        buildConfigField 'String', 'NIMBUS_ENDPOINT', 'null'
-    }
-
-    if (project.hasProperty("disableLeakCanary") || gradle.hasProperty("localProperties.disableLeakCanary")) {
-        buildConfigField "boolean", "LEAKCANARY", "false"
-    } else {
-        buildConfigField "boolean", "LEAKCANARY", "true"
-    }
 
     // Read `secretSettings.*` entries from local.properties and pass them to the app.
     def secretSettingsPrefix = "localProperties.secretSettings."
@@ -448,7 +398,7 @@ nimbus {
     // If nimbus's channels were accurately set up well for this project, then this
     // shouldn't be needed.
     channels = [
-            debug: "developer",
+            debug: "release",
             nightly: "nightly",
             beta: "beta",
             release: "release",

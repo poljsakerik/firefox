@@ -6,10 +6,13 @@ package org.mozilla.fenix.components
 
 import android.content.Context
 import mozilla.components.concept.fetch.Client
-import mozilla.components.service.glean.net.ConceptFetchHttpUploader
 import mozilla.components.support.base.log.logger.Logger
 import mozilla.telemetry.glean.Glean
 import mozilla.telemetry.glean.config.Configuration
+import mozilla.telemetry.glean.net.CapablePingUploadRequest
+import mozilla.telemetry.glean.net.PingUploader
+import mozilla.telemetry.glean.net.UnrecoverableFailure
+import mozilla.telemetry.glean.net.UploadResult
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.GleanMetrics.GleanBuildInfo
@@ -27,6 +30,7 @@ import org.mozilla.fenix.nimbus.FxNimbus
  * about initializing Glean. [isTelemetryUploadEnabled] indicate if telemetry should be enabled to be uploaded. [client]
  * an instance of [Client] used to upload metrics.
  */
+@Suppress("UNUSED_PARAMETER")
 fun initializeGlean(applicationContext: Context, logger: Logger, isTelemetryUploadEnabled: Boolean, client: Client) {
     logger.debug("Initializing Glean (uploadEnabled=$isTelemetryUploadEnabled})")
 
@@ -42,11 +46,7 @@ fun initializeGlean(applicationContext: Context, logger: Logger, isTelemetryUplo
     val configuration =
         Configuration(
             channel = BuildConfig.BUILD_TYPE,
-            httpClient =
-                ConceptFetchHttpUploader(
-                    lazy(LazyThreadSafetyMode.NONE) { client },
-                    supportsOhttp = true,
-                ),
+            httpClient = NoTelemetryUploader,
             enableEventTimestamps = FxNimbus.features.glean.value().enableEventTimestamps,
             delayPingLifetimeIo = FxNimbus.features.glean.value().delayPingLifetimeIo,
             pingLifetimeThreshold = FxNimbus.features.glean.value().pingLifetimeThreshold,
@@ -70,4 +70,17 @@ fun initializeGlean(applicationContext: Context, logger: Logger, isTelemetryUplo
 
     // Re-apply any debug view tag persisted from a previous run so it survives the restart (Nightly/Debug only).
     DefaultGleanDebugToolsStorage.restorePersistedDebugViewTag(applicationContext.components.settings)
+}
+
+/**
+ * Mirlumi Browser uploads no telemetry. Upload settings don't cover every ping, so each one ends here,
+ * and nothing reaches a server whatever Glean decides to send.
+ */
+private object NoTelemetryUploader : PingUploader {
+    private val logger = Logger("NoTelemetryUploader")
+
+    override fun upload(request: CapablePingUploadRequest): UploadResult {
+        logger.info("Dropped telemetry ping: ${request.capable { true }?.url}")
+        return UnrecoverableFailure(0)
+    }
 }

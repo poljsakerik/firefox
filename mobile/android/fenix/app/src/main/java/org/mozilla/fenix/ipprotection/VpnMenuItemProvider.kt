@@ -27,6 +27,7 @@ import mozilla.components.ui.icons.R as iconsR
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.Vpn
 import org.mozilla.fenix.NavGraphDirections
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
 import org.mozilla.fenix.components.menu.MenuHost
@@ -102,7 +103,7 @@ class VpnMenuItemProvider(
 
     /** IP protection is only offered to the users that are eligible for it. */
     private fun IPProtectionState.ipProtectionMenuItem() =
-        when (isEligible) {
+        when (isEligible && MirlumiConfig.accountsEnabled) {
             true -> toMenuState().toMenuItem()
             else -> null
         }

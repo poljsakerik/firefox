@@ -54,6 +54,7 @@ import mozilla.components.compose.base.theme.ThemedValue
 import mozilla.components.compose.base.theme.ThemedValueProvider
 import mozilla.components.ui.icons.R as iconsR
 import mozilla.components.ui.tabcounter.TabCounter
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.compose.Banner
 import org.mozilla.fenix.tabstray.TabsTrayTestTag
@@ -353,13 +354,15 @@ private fun TabPageBannerTabs(
         }
     }
 
-    BannerTab(
-        selected = selectedPage == Page.SyncedTabs,
-        testTag = TabsTrayTestTag.SYNCED_TABS_PAGE_BUTTON,
-        contentDescription = syncedTabDescription,
-        onClick = { onTabPageIndicatorClicked(Page.SyncedTabs) },
-    ) {
-        Icon(painterResource(iconsR.drawable.mozac_ic_sync_tabs_24), null)
+    if (MirlumiConfig.accountsEnabled) {
+        BannerTab(
+            selected = selectedPage == Page.SyncedTabs,
+            testTag = TabsTrayTestTag.SYNCED_TABS_PAGE_BUTTON,
+            contentDescription = syncedTabDescription,
+            onClick = { onTabPageIndicatorClicked(Page.SyncedTabs) },
+        ) {
+            Icon(painterResource(iconsR.drawable.mozac_ic_sync_tabs_24), null)
+        }
     }
 }
 

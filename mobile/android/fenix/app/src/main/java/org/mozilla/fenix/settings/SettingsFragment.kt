@@ -68,6 +68,7 @@ import org.mozilla.fenix.GleanMetrics.TrackingProtection
 import org.mozilla.fenix.GleanMetrics.Translations
 import org.mozilla.fenix.GleanMetrics.Vpn
 import org.mozilla.fenix.HomeActivity
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.Components
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
@@ -678,6 +679,16 @@ class SettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragment 
         setupDnsOverHttpsPreference(settings)
         setupEmailMaskPreference(settings, requireComponents)
         setupAutofillPreferences(settings)
+        hideUnsupportedPreferences()
+    }
+
+    /** Inherited entries with nothing behind them in Mirlumi Browser. */
+    private fun hideUnsupportedPreferences() {
+        requirePreference<Preference>(R.string.pref_key_data_choices).isVisible = false
+        requirePreference<Preference>(R.string.pref_key_rate).isVisible = false
+        requirePreference<Preference>(R.string.pref_key_remote_improvements).isVisible = false
+        findPreference<Preference>(getPreferenceKey(R.string.pref_key_nimbus_experiments))?.isVisible = false
+        findPreference<Preference>(getPreferenceKey(R.string.pref_key_sync_debug))?.isVisible = false
     }
 
     private fun setupAutofillPreferences(settings: Settings) {
@@ -913,7 +924,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragment 
     @VisibleForTesting
     internal fun setupIPProtectionPreferences(ipProtectionStore: IPProtectionStore) {
         findPreference<IPProtectionPreference>(getPreferenceKey(R.string.pref_key_ip_protection_settings))?.apply {
-            isVisible = ipProtectionStore.state.isEligible
+            isVisible = ipProtectionStore.state.isEligible && MirlumiConfig.accountsEnabled
             showBetaBadge = FxNimbus.features.ipProtection.value().showBetaBadge
         }
     }
