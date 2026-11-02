@@ -20,7 +20,7 @@ import org.mozilla.fenix.tabstray.redux.state.Page
 /** Pins the configuration that makes this Mirlumi Browser rather than Firefox. */
 class MirlumiConfigTest {
     @Test
-    fun `identity is Mirlumi's and separate from the proof of concept`() {
+    fun `identity is Mirlumi's own`() {
         assertEquals("app.mirlumi.browser.dev", BuildConfig.APPLICATION_ID)
         assertEquals("mirlumi-dev", BuildConfig.DEEP_LINK_SCHEME)
     }
