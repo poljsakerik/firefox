@@ -14,6 +14,9 @@ object MirlumiConfig {
     /** Mozilla accounts and sync. Stays off until Mirlumi deliberately supports that service. */
     val accountsEnabled: Boolean = false
 
+    /** Homepage statements such as "You're protected", which must not imply child safety. */
+    val protectionClaimsEnabled: Boolean = false
+
     /** The public site for [locale]: mirlumi.si in Slovenian, mirlumi.com otherwise. */
     fun siteUrl(locale: Locale): String =
         if (locale.language == "sl") {

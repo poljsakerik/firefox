@@ -151,7 +151,9 @@ class SearchMiddleware(
         val disabledSearchEngineIdsDeferred = async { metadataStorage.getDisabledSearchEngineIds() }
         val additionalSearchEngineIdsDeferred = async { metadataStorage.getAdditionalSearchEngines() }
 
-        val (regionBundle, allAdditionalSearchEngines) = fetchSearchEngineBundles(region, distribution)
+        val (upstreamBundle, upstreamAdditionalSearchEngines) = fetchSearchEngineBundles(region, distribution)
+        val regionBundle = upstreamBundle.forMirlumi()
+        val allAdditionalSearchEngines = upstreamAdditionalSearchEngines.map { it.withoutPartnerAttribution() }
 
         val hiddenSearchEngineIds = hiddenSearchEngineIdsDeferred.await()
         val additionalSearchEngineIds = additionalSearchEngineIdsDeferred.await()
@@ -565,3 +567,34 @@ class SearchMiddleware(
         )
     }
 }
+
+/** Query parameters that credit a search to Mozilla's partner deals. They play no part in the search itself. */
+private val PARTNER_PARAMETERS = setOf("channel", "client", "form", "pc", "sourceid", "t")
+
+private const val MIRLUMI_DEFAULT_SEARCH_ENGINE = "ddg"
+
+/** Removes [PARTNER_PARAMETERS] from a search URL template, keeping every other parameter as it is. */
+internal fun String.withoutPartnerParameters(): String {
+    val base = substringBefore('?')
+    val query = substringAfter('?', "")
+    val kept = query.split('&').filter { it.isNotEmpty() && it.substringBefore('=') !in PARTNER_PARAMETERS }
+    return if (kept.isEmpty()) base else "$base?${kept.joinToString("&")}"
+}
+
+/**
+ * Removes partner attribution from a bundled engine's result URLs. Suggestion URLs stay untouched:
+ * their `client` parameter selects the response format.
+ */
+internal fun SearchEngine.withoutPartnerAttribution(): SearchEngine =
+    if (type == SearchEngine.Type.BUNDLED) {
+        copy(resultUrls = resultUrls.map { it.withoutPartnerParameters() })
+    } else {
+        this
+    }
+
+private fun SearchMiddleware.BundleStorage.Bundle.forMirlumi() =
+    copy(
+        list = list.map { it.withoutPartnerAttribution() },
+        defaultSearchEngineId =
+            list.firstOrNull { it.id == MIRLUMI_DEFAULT_SEARCH_ENGINE }?.id ?: defaultSearchEngineId,
+    )

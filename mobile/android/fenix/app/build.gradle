@@ -109,7 +109,7 @@ android {
             minifyEnabled = false
             applicationIdSuffix ".dev"
             resValue "bool", "IS_DEBUG", "true"
-            pseudoLocalesEnabled = true
+            pseudoLocalesEnabled = false
         }
         nightly releaseTemplate >> {
             applicationIdSuffix ".nightly"

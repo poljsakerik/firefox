@@ -50,6 +50,7 @@ import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.History
 import org.mozilla.fenix.GleanMetrics.HomeBookmarks
 import org.mozilla.fenix.GleanMetrics.RecentlyVisitedHomepage
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.appstate.AppAction
@@ -230,7 +231,8 @@ internal fun Homepage(
                                 )
                             }
 
-                            if (showPrivacyReport) {
+                            // Mirlumi makes no protection claims on the homepage in this baseline.
+                            if (showPrivacyReport && MirlumiConfig.protectionClaimsEnabled) {
                                 TrackersBlockedCard(
                                     trackersBlockedCount = trackersBlockedCount,
                                     onPrivacyReportTapped = interactor::onPrivacyReportTapped,

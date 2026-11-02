@@ -25,8 +25,8 @@ object SupportUtils {
     const val RATE_APP_URL = "market://details?id=" + BuildConfig.APPLICATION_ID
     const val FENIX_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=${BuildConfig.APPLICATION_ID}"
     const val GOOGLE_URL = "https://www.google.com/"
-    const val GOOGLE_US_URL = "https://www.google.com/webhp?client=firefox-b-1-m&channel=ts"
-    const val GOOGLE_XX_URL = "https://www.google.com/webhp?client=firefox-b-m&channel=ts"
+    const val GOOGLE_US_URL = GOOGLE_URL
+    const val GOOGLE_XX_URL = GOOGLE_URL
     const val WHATS_NEW_URL = "https://github.com/poljsakerik/firefox"
     const val FXACCOUNT_SUMO_URL = "https://support.mozilla.org/kb/access-mozilla-services-firefox-account"
     const val ANDROID_SUPPORT_SUMO_URL = "mzl.la/AndroidSupport"
