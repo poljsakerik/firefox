@@ -14,6 +14,7 @@ import mozilla.components.concept.sync.SyncEngine
 import mozilla.components.feature.autofill.preference.AutofillPreference
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.Logins
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.biometricauthentication.AuthenticationStatus
 import org.mozilla.fenix.biometricauthentication.BiometricAuthenticationManager
@@ -90,6 +91,8 @@ class SavedLoginsAuthFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFr
             navigateToSavedLoginsFragment()
             true
         }
+
+        requirePreference<Preference>(R.string.pref_key_sync_logins).isVisible = MirlumiConfig.accountsEnabled
 
         SyncPreferenceView(
             syncPreference = requirePreference(R.string.pref_key_sync_logins),

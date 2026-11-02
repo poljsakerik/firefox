@@ -35,6 +35,7 @@ import mozilla.components.concept.storage.Address
 import mozilla.components.concept.storage.CreditCard
 import mozilla.components.service.fxa.manager.FxaAccountManager
 import mozilla.components.ui.icons.R as iconsR
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.compose.list.IconListItem
 import org.mozilla.fenix.compose.list.SwitchListItem
@@ -212,19 +213,21 @@ private fun AutofillSettingsCreditCardSection(store: AutofillSettingsStore) {
 
     Spacer(modifier = Modifier.height(FirefoxTheme.layout.space.static100))
 
-    if (state.accountAuthState == AccountAuthState.Authenticated) {
-        SwitchListItem(
-            label = stringResource(id = R.string.preferences_credit_cards_sync_cards),
-            checked = state.syncCreditCards,
-            showSwitchAfter = true,
-        ) {
-            store.dispatch(UpdateCreditCardsSyncStatus(!state.syncCreditCards))
+    if (MirlumiConfig.accountsEnabled) {
+        if (state.accountAuthState == AccountAuthState.Authenticated) {
+            SwitchListItem(
+                label = stringResource(id = R.string.preferences_credit_cards_sync_cards),
+                checked = state.syncCreditCards,
+                showSwitchAfter = true,
+            ) {
+                store.dispatch(UpdateCreditCardsSyncStatus(!state.syncCreditCards))
+            }
+        } else {
+            TextListItem(
+                label = stringResource(id = R.string.preferences_credit_cards_sync_cards_across_devices),
+                onClick = { store.dispatch(SyncCardsAcrossDevicesClicked) },
+            )
         }
-    } else {
-        TextListItem(
-            label = stringResource(id = R.string.preferences_credit_cards_sync_cards_across_devices),
-            onClick = { store.dispatch(SyncCardsAcrossDevicesClicked) },
-        )
     }
 
     Spacer(modifier = Modifier.height(FirefoxTheme.layout.space.static100))

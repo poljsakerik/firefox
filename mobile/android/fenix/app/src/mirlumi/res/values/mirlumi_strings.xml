@@ -66,7 +66,7 @@
     <string name="onboarding_term_of_service_line_two_2">Mirlumi Browser describes how it handles data in our %1$s.</string>
     <string name="onboarding_welcome_to_firefox">Welcome to Mirlumi</string>
     <string name="preference_experiments_summary_2">This build doesn’t run studies.</string>
-    <string name="preference_search_address_bar_fx_suggest">Address bar - Mirlumi Suggest</string>
+    <string name="preference_search_address_bar_fx_suggest">Address bar</string>
     <string name="preference_search_learn_about_fx_suggest">Learn more about Mirlumi Suggest</string>
     <string name="preferences_account_default_name_2">Account</string>
     <string name="preferences_daily_usage_ping_description">This build doesn’t send this data.</string>

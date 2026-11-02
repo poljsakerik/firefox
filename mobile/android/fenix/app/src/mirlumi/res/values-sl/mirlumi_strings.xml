@@ -64,7 +64,7 @@
     <string name="onboarding_term_of_service_line_two_2">Kako Mirlumi Browser ravna s podatki, opisuje %1$s.</string>
     <string name="onboarding_welcome_to_firefox">Dobrodošli v Mirlumiju</string>
     <string name="preference_experiments_summary_2">Ta različica ne izvaja raziskav.</string>
-    <string name="preference_search_address_bar_fx_suggest">Naslovna vrstica – Mirlumijevi predlogi</string>
+    <string name="preference_search_address_bar_fx_suggest">Naslovna vrstica</string>
     <string name="preference_search_learn_about_fx_suggest">Več o Mirlumijevih predlogih</string>
     <string name="preferences_account_default_name_2">Račun</string>
     <string name="preferences_daily_usage_ping_description">Ta različica teh podatkov ne pošilja.</string>

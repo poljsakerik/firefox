@@ -38,6 +38,7 @@ import mozilla.components.service.sync.autofill.AutofillCreditCardsAddressesStor
 import mozilla.components.ui.icons.R as iconsR
 import mozilla.components.ui.widgets.withCenterAlignedButtons
 import org.mozilla.fenix.Config
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.NavGraphDirections
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.LogMiddleware
@@ -185,7 +186,8 @@ class AutofillSettingFragment : BiometricPromptPreferenceFragment(), SystemInset
                     AutofillSettingsScreen(
                         buildStore = buildStore,
                         accountManager = requireComponents.backgroundServices.accountManager,
-                        isAddressSyncEnabled = requireComponents.settings.isAddressSyncEnabled,
+                        isAddressSyncEnabled =
+                            MirlumiConfig.accountsEnabled && requireComponents.settings.isAddressSyncEnabled,
                     )
                 }
             }
@@ -245,6 +247,9 @@ class AutofillSettingFragment : BiometricPromptPreferenceFragment(), SystemInset
         } else {
             showToolbar(getString(R.string.preferences_credit_cards_2))
         }
+
+        requirePreference<Preference>(R.string.pref_key_credit_cards_sync_cards_across_devices).isVisible =
+            MirlumiConfig.accountsEnabled
 
         SyncPreferenceView(
             syncPreference = requirePreference(R.string.pref_key_credit_cards_sync_cards_across_devices),
@@ -310,7 +315,8 @@ class AutofillSettingFragment : BiometricPromptPreferenceFragment(), SystemInset
 
         // show address sync preference if address sync is enabled
         val addressSyncPreference = requirePreference<Preference>(R.string.pref_key_addresses_sync_cards_across_devices)
-        addressSyncPreference.isVisible = requireComponents.settings.isAddressSyncEnabled
+        addressSyncPreference.isVisible =
+            MirlumiConfig.accountsEnabled && requireComponents.settings.isAddressSyncEnabled
 
         if (hasAddresses) {
             manageAddressesPreference.icon = null

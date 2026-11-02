@@ -27,6 +27,7 @@ import mozilla.components.support.ktx.android.content.share
 import mozilla.components.support.ktx.android.content.shareWithChooserActions
 import mozilla.components.support.ktx.kotlin.trimmed
 import mozilla.components.ui.icons.R as iconsR
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.menu.share.QRCodeGenerator
 
@@ -47,6 +48,9 @@ enum class ShareSheetChooserAction {
         /** Chooser actions offered when sharing a set of tabs. */
         val tabChooserActions = listOf(SEND_TO_DEVICES, QR_CODE)
     }
+
+    /** Sending to a device needs an account, which Mirlumi Browser doesn't offer yet. */
+    fun isSupported() = this != SEND_TO_DEVICES || MirlumiConfig.accountsEnabled
 }
 
 /**
@@ -226,6 +230,7 @@ class DefaultShareSheetLauncher(
                     subject = shareSubject,
                     actions =
                         chooserActions
+                            .filter { it.isSupported() }
                             .mapNotNull {
                                 it.toChooserAction(
                                     applicationContext = applicationContext,
@@ -299,6 +304,7 @@ class DefaultShareSheetLauncher(
                     subject = shareSubject,
                     actions =
                         chooserActions
+                            .filter { it.isSupported() }
                             .mapNotNull {
                                 it.toChooserAction(
                                     applicationContext = applicationContext,
