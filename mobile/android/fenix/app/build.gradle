@@ -193,6 +193,10 @@ android {
     }
 
     sourceSets {
+        // Mirlumi's brand overlay: generated, and overrides upstream resources by name.
+        debug {
+            res.srcDirs += ['src/mirlumi/res']
+        }
         androidTest {
             resources.srcDirs += ['src/androidTest/resources']
             assets.srcDirs += files("$projectDir/schemas".toString())

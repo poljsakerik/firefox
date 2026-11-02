@@ -131,7 +131,7 @@ val lightAcornGradientScheme =
                 colorStops =
                     listOf(
                         ColorStop(0f, NovaColors.Violet30),
-                        ColorStop(0.71f, NovaColors.Orange30),
+                        ColorStop(0.71f, NovaColors.Violet40),
                     ),
             ),
         accentSubtle =
@@ -140,7 +140,7 @@ val lightAcornGradientScheme =
                 colorStops =
                     listOf(
                         ColorStop(0.4f, NovaColors.Violet10A50),
-                        ColorStop(1f, NovaColors.Orange10A50),
+                        ColorStop(1f, NovaColors.Violet0),
                     ),
             ),
         tabOutline = tabOutline,
