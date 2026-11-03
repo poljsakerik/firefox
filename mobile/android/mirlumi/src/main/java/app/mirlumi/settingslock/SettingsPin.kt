@@ -12,9 +12,11 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
 /** Where [SettingsPin] keeps its values. Production storage is encrypted with a key in the Android Keystore. */
-interface PinStore {
+internal interface PinStore {
     fun get(key: String): String?
+
     fun put(key: String, value: String)
+
     fun remove(key: String)
 }
 
@@ -26,7 +28,7 @@ interface PinStore {
  * A lockout is measured on [elapsed], the time since the device started, which keeps counting during sleep and doesn't
  * move when someone changes the clock. [now] only turns what's left of it into a time to show.
  */
-class SettingsPin(
+internal class SettingsPin(
     private val store: PinStore,
     private val now: () -> Long = System::currentTimeMillis,
     private val elapsed: () -> Long = SystemClock::elapsedRealtime,
@@ -46,7 +48,8 @@ class SettingsPin(
         require(isValid(pin)) { "A PIN is $LENGTH digits" }
         val salt = ByteArray(SALT_BYTES).also { SecureRandom().nextBytes(it) }
         val encoder = Base64.getEncoder()
-        store.put(KEY_PIN, "$ITERATIONS:${encoder.encodeToString(salt)}:${encoder.encodeToString(hash(pin, salt, ITERATIONS))}")
+        val hash = encoder.encodeToString(hash(pin, salt, ITERATIONS))
+        store.put(KEY_PIN, "$ITERATIONS:${encoder.encodeToString(salt)}:$hash")
         resetAttempts()
     }
 
@@ -64,26 +67,33 @@ class SettingsPin(
     }
 
     fun check(pin: String): Result {
-        lockedOutUntil()?.let { return Result.LockedOut(it) }
-        val stored = store.get(KEY_PIN)?.split(":") ?: return Result.Wrong
-        val decoder = Base64.getDecoder()
-        val matches =
-            isValid(pin) &&
-                stored.size == 3 &&
-                MessageDigest.isEqual(
-                    hash(pin, decoder.decode(stored[1]), stored[0].toInt()),
-                    decoder.decode(stored[2]),
-                )
-        if (matches) {
+        lockedOutUntil()?.let {
+            return Result.LockedOut(it)
+        }
+        if (matches(pin)) {
             resetAttempts()
             return Result.Correct
         }
+        return recordFailure()
+    }
+
+    private fun matches(pin: String): Boolean {
+        val stored = store.get(KEY_PIN)?.split(":")
+        if (!isValid(pin) || stored?.size != STORED_PARTS) return false
+        val (iterations, salt, hash) = stored
+        val decoder = Base64.getDecoder()
+        return MessageDigest.isEqual(
+            hash(pin, decoder.decode(salt), iterations.toInt()),
+            decoder.decode(hash),
+        )
+    }
+
+    private fun recordFailure(): Result {
         val failures = (store.get(KEY_FAILURES)?.toIntOrNull() ?: 0) + 1
         store.put(KEY_FAILURES, failures.toString())
-        if (failures <= FREE_ATTEMPTS) {
-            return Result.Wrong
-        }
-        val lockout = (FIRST_LOCKOUT_MS shl minOf(failures - FREE_ATTEMPTS - 1, MAX_DOUBLINGS)).coerceAtMost(MAX_LOCKOUT_MS)
+        if (failures <= FREE_ATTEMPTS) return Result.Wrong
+        val doublings = minOf(failures - FREE_ATTEMPTS - 1, MAX_DOUBLINGS)
+        val lockout = (FIRST_LOCKOUT_MS shl doublings).coerceAtMost(MAX_LOCKOUT_MS)
         store.put(KEY_LOCKOUT_STARTED, elapsed().toString())
         store.put(KEY_LOCKOUT_LENGTH, lockout.toString())
         return Result.LockedOut(now() + lockout)
@@ -114,6 +124,9 @@ class SettingsPin(
         private const val ITERATIONS = 20_000
         private const val SALT_BYTES = 16
         private const val HASH_BITS = 256
+
+        // Iterations, salt and hash.
+        private const val STORED_PARTS = 3
         private const val KEY_PIN = "pin"
         private const val KEY_FAILURES = "failures"
         private const val KEY_LOCKOUT_STARTED = "lockout_started"

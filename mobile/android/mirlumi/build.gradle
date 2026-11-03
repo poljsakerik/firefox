@@ -30,6 +30,12 @@ android {
     }
 }
 
+mozilla {
+    ktfmtSourcePaths = ["src/**/*.kt", "!**/build/**/*.kt"]
+    detektSourcePaths = ["**/src/**/*.kt", "!**/build/**"]
+    detektConfig = "$projectDir/../android-components/config/detekt.yml"
+}
+
 dependencies {
     implementation project(':components:compose-base')
     implementation project(':components:lib-dataprotect')
@@ -46,4 +52,6 @@ dependencies {
     implementation libs.androidx.preference
 
     testImplementation libs.junit4
+
+    detektPlugins project(":components:tooling-detekt")
 }

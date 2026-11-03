@@ -24,7 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +44,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mirlumi.R
 import kotlinx.coroutines.delay
+import mozilla.components.compose.base.button.TextButton
+import mozilla.components.compose.base.theme.AcornTheme
 import mozilla.components.ui.icons.R as iconsR
 
 @Composable
@@ -70,7 +71,12 @@ internal fun PinScreen(
     Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxSize()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 32.dp),
+            modifier =
+                Modifier.verticalScroll(rememberScrollState())
+                    .padding(
+                        horizontal = AcornTheme.layout.space.static300,
+                        vertical = AcornTheme.layout.space.static400,
+                    ),
         ) {
             Icon(
                 painter = painterResource(iconsR.drawable.mozac_ic_lock_24),
@@ -81,7 +87,7 @@ internal fun PinScreen(
             Spacer(Modifier.height(16.dp))
             Text(
                 text = stringResource(title(purpose, state.step)),
-                style = MaterialTheme.typography.headlineSmall,
+                style = AcornTheme.typography.headline6,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
             )
@@ -89,7 +95,7 @@ internal fun PinScreen(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = stringResource(it),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = AcornTheme.typography.body2,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.widthIn(max = 360.dp),
@@ -97,11 +103,14 @@ internal fun PinScreen(
             }
             Spacer(Modifier.height(32.dp))
             Dots(entered = state.digits)
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.heightIn(min = 56.dp).padding(vertical = 8.dp)) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.heightIn(min = 56.dp).padding(vertical = AcornTheme.layout.space.static100),
+            ) {
                 state.message?.let {
                     Text(
                         text = message(it, now),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = AcornTheme.typography.body2,
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
@@ -123,11 +132,10 @@ private fun Dots(entered: Int) {
         repeat(SettingsPin.LENGTH) { index ->
             val color = MaterialTheme.colorScheme.primary
             Box(
-                Modifier
-                    .size(16.dp)
+                Modifier.size(16.dp)
                     .clip(CircleShape)
                     .border(2.dp, color, CircleShape)
-                    .background(if (index < entered) color else MaterialTheme.colorScheme.surface),
+                    .background(if (index < entered) color else MaterialTheme.colorScheme.surface)
             )
         }
     }
@@ -149,7 +157,7 @@ private fun Keypad(
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(KEY_SIZE)) {
                 if (onCancel != null) {
-                    TextButton(onClick = onCancel) { Text(stringResource(R.string.mirlumi_pin_cancel)) }
+                    TextButton(text = stringResource(R.string.mirlumi_pin_cancel), onClick = onCancel)
                 }
             }
             DigitKey('0', enabled, onDigit)
@@ -183,15 +191,17 @@ private fun DigitKey(digit: Char, enabled: Boolean, onDigit: (Char) -> Unit) {
         modifier = Modifier.size(KEY_SIZE),
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Text(digit.toString(), style = MaterialTheme.typography.headlineMedium)
+            Text(digit.toString(), style = AcornTheme.typography.headline5)
         }
     }
 }
 
 private fun title(purpose: PinPurpose, step: PinFlow.Step): Int =
     when (step) {
-        PinFlow.Step.CURRENT -> if (purpose == PinPurpose.CHANGE) R.string.mirlumi_pin_current_title else R.string.mirlumi_pin_unlock_title
-        PinFlow.Step.CHOOSE -> if (purpose == PinPurpose.CHANGE) R.string.mirlumi_pin_new_title else R.string.mirlumi_pin_setup_title
+        PinFlow.Step.CURRENT ->
+            if (purpose == PinPurpose.CHANGE) R.string.mirlumi_pin_current_title else R.string.mirlumi_pin_unlock_title
+        PinFlow.Step.CHOOSE ->
+            if (purpose == PinPurpose.CHANGE) R.string.mirlumi_pin_new_title else R.string.mirlumi_pin_setup_title
         PinFlow.Step.CONFIRM -> R.string.mirlumi_pin_confirm_title
     }
 

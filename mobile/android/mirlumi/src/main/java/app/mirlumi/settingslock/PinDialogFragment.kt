@@ -110,21 +110,23 @@ class PinDialogFragment : DialogFragment() {
 
         private fun tag(purpose: PinPurpose) =
             when (purpose) {
-                PinPurpose.UNLOCK, PinPurpose.SETUP -> TAG
+                PinPurpose.UNLOCK,
+                PinPurpose.SETUP -> TAG
                 PinPurpose.AUTHORIZE -> "${TAG}_authorize"
                 PinPurpose.CHANGE -> "${TAG}_change"
             }
 
         /** Shows the PIN screen for [purpose], unless one for the same need is already open. */
-        fun show(fragmentManager: FragmentManager, purpose: PinPurpose, required: Boolean = false) {
+        internal fun show(fragmentManager: FragmentManager, purpose: PinPurpose, required: Boolean = false) {
             val open = fragmentManager.findFragmentByTag(tag(purpose)) as? PinDialogFragment
             if (fragmentManager.isStateSaved || (open != null && !open.closing)) return
             PinDialogFragment()
                 .apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_PURPOSE, purpose.name)
-                        putBoolean(ARG_REQUIRED, required)
-                    }
+                    arguments =
+                        Bundle().apply {
+                            putString(ARG_PURPOSE, purpose.name)
+                            putBoolean(ARG_REQUIRED, required)
+                        }
                 }
                 .show(fragmentManager, tag(purpose))
         }

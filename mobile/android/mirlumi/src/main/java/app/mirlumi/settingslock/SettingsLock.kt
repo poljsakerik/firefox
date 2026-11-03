@@ -34,8 +34,8 @@ object SettingsLock {
     private val guards = mutableMapOf<FragmentActivity, Guard>()
 
     /**
-     * Watches [navController] for locked screens and asks for the PIN, or for a first PIN once [isOnboarded].
-     * Call from the activity's `onCreate`.
+     * Watches [navController] for locked screens and asks for the PIN, or for a first PIN once [isOnboarded]. Call from
+     * the activity's `onCreate`.
      */
     fun install(
         activity: FragmentActivity,
@@ -78,7 +78,8 @@ object SettingsLock {
     /** Called by the PIN screen when it closes, [succeeded] or not. */
     internal fun onPinScreenClosed(purpose: PinPurpose, activity: FragmentActivity, succeeded: Boolean) {
         when (purpose) {
-            PinPurpose.UNLOCK, PinPurpose.SETUP ->
+            PinPurpose.UNLOCK,
+            PinPurpose.SETUP ->
                 if (succeeded) {
                     activity.supportFragmentManager.setFragmentResult(UNLOCK_RESULT, Bundle())
                 } else {
@@ -169,8 +170,7 @@ private class KeystorePinStore(context: Context) : PinStore {
     }
     private lateinit var prefs: SecureAbove22Preferences
 
-    @Synchronized
-    override fun get(key: String): String? = values[key]
+    @Synchronized override fun get(key: String): String? = values[key]
 
     @Synchronized
     override fun put(key: String, value: String) {

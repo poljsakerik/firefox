@@ -20,8 +20,9 @@ class SettingsPinPreference(context: Context, attrs: AttributeSet?) : Preference
     }
 
     override fun onClick() {
-        val activity = generateSequence(context) { (it as? ContextWrapper)?.baseContext }
-            .firstNotNullOfOrNull { it as? FragmentActivity } ?: return
+        val activity =
+            generateSequence(context) { (it as? ContextWrapper)?.baseContext }
+                .firstNotNullOfOrNull { it as? FragmentActivity } ?: return
         PinDialogFragment.show(activity.supportFragmentManager, PinPurpose.CHANGE)
     }
 }

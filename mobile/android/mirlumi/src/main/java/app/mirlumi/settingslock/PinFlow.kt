@@ -5,7 +5,7 @@
 package app.mirlumi.settingslock
 
 /** What the PIN screen is for. */
-enum class PinPurpose {
+internal enum class PinPurpose {
     /** Opening a locked screen. */
     UNLOCK,
 
@@ -20,11 +20,15 @@ enum class PinPurpose {
 }
 
 /** The steps of entering, choosing and confirming a PIN, with no UI. */
-class PinFlow(
+internal class PinFlow(
     private val pin: SettingsPin,
     purpose: PinPurpose,
 ) {
-    enum class Step { CURRENT, CHOOSE, CONFIRM }
+    enum class Step {
+        CURRENT,
+        CHOOSE,
+        CONFIRM,
+    }
 
     sealed interface Message {
         data object Wrong : Message
@@ -57,11 +61,13 @@ class PinFlow(
         get() = state.message is Message.LockedOut
 
     fun type(digit: Char) {
-        if (state.done || isLockedOut || entered.length >= SettingsPin.LENGTH || digit !in '0'..'9') return
+        if (!acceptsDigits() || digit !in '0'..'9') return
         entered += digit
         state = state.copy(digits = entered.length, message = if (entered.length == 1) null else state.message)
         if (entered.length == SettingsPin.LENGTH) submit()
     }
+
+    private fun acceptsDigits(): Boolean = !state.done && !isLockedOut && entered.length < SettingsPin.LENGTH
 
     fun delete() {
         if (state.done || entered.isEmpty()) return
@@ -91,7 +97,8 @@ class PinFlow(
                         SettingsPin.Result.Correct ->
                             if (choosesNewPin) State(Step.CHOOSE) else state.copy(digits = 0, done = true)
                         is SettingsPin.Result.Wrong -> state.copy(digits = 0, message = Message.Wrong)
-                        is SettingsPin.Result.LockedOut -> state.copy(digits = 0, message = Message.LockedOut(result.untilMillis))
+                        is SettingsPin.Result.LockedOut ->
+                            state.copy(digits = 0, message = Message.LockedOut(result.untilMillis))
                     }
                 Step.CHOOSE -> {
                     chosen = value
