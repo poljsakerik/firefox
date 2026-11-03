@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<resources>
+    <string name="mirlumi_pin_setup_title">Choose a PIN for Settings</string>
+    <string name="mirlumi_pin_setup_body">You’ll need these 4 digits to open Settings and to change anything else in the browser. Choose a PIN you’ll remember.</string>
+    <string name="mirlumi_pin_confirm_title">Enter the PIN again</string>
+    <string name="mirlumi_pin_confirm_body">Remember this PIN. You’ll need it every time you change something.</string>
+    <string name="mirlumi_pin_unlock_title">Enter the Settings PIN</string>
+    <string name="mirlumi_pin_unlock_body">Settings are protected with a PIN.</string>
+    <string name="mirlumi_pin_authorize_body">This needs the Settings PIN.</string>
+    <string name="mirlumi_pin_current_title">Enter your current PIN</string>
+    <string name="mirlumi_pin_new_title">Choose a new PIN</string>
+    <string name="mirlumi_pin_changed">Settings PIN changed</string>
+    <string name="mirlumi_pin_wrong">Wrong PIN. Try again.</string>
+    <string name="mirlumi_pin_mismatch">The PINs didn’t match. Choose a PIN again.</string>
+    <!-- %s is a length of time, such as "30 seconds". -->
+    <string name="mirlumi_pin_locked_out">Too many wrong PINs. Try again in %s.</string>
+    <plurals name="mirlumi_pin_seconds">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
+    <plurals name="mirlumi_pin_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <string name="mirlumi_pin_cancel">Cancel</string>
+    <string name="mirlumi_pin_delete">Delete</string>
+    <!-- Read by screen readers: %1$d digits of %2$d entered. -->
+    <string name="mirlumi_pin_progress">%1$d of %2$d digits entered</string>
+    <string name="mirlumi_pin_preference_title">Change Settings PIN</string>
+    <string name="mirlumi_pin_preference_summary">The PIN that protects Settings</string>
+</resources>

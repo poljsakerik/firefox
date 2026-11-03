@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<resources>
+    <string name="mirlumi_pin_setup_title">Izberite PIN za nastavitve</string>
+    <string name="mirlumi_pin_setup_body">Te 4 števke boste potrebovali, da odprete nastavitve ali kar koli drugega spremenite v brskalniku. Izberite PIN, ki si ga boste zapomnili.</string>
+    <string name="mirlumi_pin_confirm_title">Znova vnesite PIN</string>
+    <string name="mirlumi_pin_confirm_body">Zapomnite si ta PIN. Potrebovali ga boste vsakič, ko boste kaj spremenili.</string>
+    <string name="mirlumi_pin_unlock_title">Vnesite PIN za nastavitve</string>
+    <string name="mirlumi_pin_unlock_body">Nastavitve so zaščitene s PIN-om.</string>
+    <string name="mirlumi_pin_authorize_body">Za to potrebujete PIN za nastavitve.</string>
+    <string name="mirlumi_pin_current_title">Vnesite trenutni PIN</string>
+    <string name="mirlumi_pin_new_title">Izberite nov PIN</string>
+    <string name="mirlumi_pin_changed">PIN za nastavitve je spremenjen</string>
+    <string name="mirlumi_pin_wrong">Napačen PIN. Poskusite znova.</string>
+    <string name="mirlumi_pin_mismatch">PIN-a se ne ujemata. Znova izberite PIN.</string>
+    <string name="mirlumi_pin_locked_out">Preveč napačnih vnosov. Poskusite znova čez %s.</string>
+    <plurals name="mirlumi_pin_seconds">
+        <item quantity="one">%d sekundo</item>
+        <item quantity="two">%d sekundi</item>
+        <item quantity="few">%d sekunde</item>
+        <item quantity="other">%d sekund</item>
+    </plurals>
+    <plurals name="mirlumi_pin_minutes">
+        <item quantity="one">%d minuto</item>
+        <item quantity="two">%d minuti</item>
+        <item quantity="few">%d minute</item>
+        <item quantity="other">%d minut</item>
+    </plurals>
+    <string name="mirlumi_pin_cancel">Prekliči</string>
+    <string name="mirlumi_pin_delete">Izbriši</string>
+    <string name="mirlumi_pin_progress">Vnesenih števk: %1$d od %2$d</string>
+    <string name="mirlumi_pin_preference_title">Spremeni PIN za nastavitve</string>
+    <string name="mirlumi_pin_preference_summary">PIN, ki ščiti nastavitve</string>
+</resources>

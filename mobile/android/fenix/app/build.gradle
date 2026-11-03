@@ -410,6 +410,7 @@ nimbus {
 
 dependencies {
     implementation project('longfox')
+    implementation project(':mirlumi')
     implementation project(':components:browser-engine-gecko')
     implementation project(':components:compose-awesomebar')
     implementation project(':components:compose-base')

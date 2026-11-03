@@ -1,0 +1,49 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+// Mirlumi's own features, kept out of upstream files so that a Firefox update rebases a few small hooks.
+
+plugins {
+    id 'com.android.library'
+    alias(libs.plugins.kotlin.compose)
+}
+
+android {
+    namespace = 'app.mirlumi'
+    compileSdk {
+        version = release(config.compileSdkMajorVersion) { minorApiLevel = config.compileSdkMinorVersion }
+    }
+    defaultConfig {
+        minSdk config.minSdkVersion
+    }
+    buildFeatures {
+        compose = true
+    }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+    lint {
+        lintConfig = file("../shared-lint.xml")
+    }
+}
+
+dependencies {
+    implementation project(':components:compose-base')
+    implementation project(':components:lib-dataprotect')
+    implementation project(':components:ui-icons')
+
+    implementation platform(libs.androidx.compose.bom)
+    implementation libs.androidx.compose.foundation
+    implementation libs.androidx.compose.material3
+    implementation libs.androidx.compose.ui
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.fragment.ktx
+    implementation libs.androidx.lifecycle.viewmodel
+    implementation libs.androidx.navigation.fragment
+    implementation libs.androidx.preference
+
+    testImplementation libs.junit4
+}
