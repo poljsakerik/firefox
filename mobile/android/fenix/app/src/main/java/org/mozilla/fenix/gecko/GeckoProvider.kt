@@ -19,6 +19,7 @@ import mozilla.components.lib.crash.store.CrashAction
 import mozilla.components.service.sync.autofill.GeckoCreditCardsAddressesStorageDelegate
 import mozilla.components.service.sync.logins.GeckoLoginStorageDelegate
 import org.mozilla.fenix.Config
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.nimbus.FxNimbus
@@ -128,7 +129,9 @@ object GeckoProvider {
                 )
                 .consoleOutput(context.components.settings.enableGeckoLogs)
                 .debugLogging(Config.channel.isDebug || context.components.settings.enableGeckoLogs)
-                .aboutConfigEnabled(Config.channel.isBeta || Config.channel.isNightlyOrDebug)
+                .aboutConfigEnabled(
+                    !MirlumiConfig.settingsLockEnabled && (Config.channel.isBeta || Config.channel.isNightlyOrDebug)
+                )
                 .extensionsProcessEnabled(true)
                 .extensionsWebAPIEnabled(true)
                 .translationsOfferPopup(context.components.settings.offerTranslation)

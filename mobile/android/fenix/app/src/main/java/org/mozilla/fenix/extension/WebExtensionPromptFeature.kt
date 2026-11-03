@@ -17,6 +17,7 @@ import androidx.appcompat.R as appcompatR
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
+import app.mirlumi.settingslock.SettingsLock
 import com.google.android.material.R as materialR
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineDispatcher
@@ -132,10 +133,15 @@ class WebExtensionPromptFeature(
         val addon = Addon.newFromWebExtension(promptRequest.extension, installedState)
         when (promptRequest) {
             is WebExtensionPromptRequest.AfterInstallation.Permissions.Required ->
-                handleRequiredPermissionRequest(
-                    addon,
-                    promptRequest,
-                )
+                SettingsLock.authorize(
+                    fragmentManager,
+                    onDenied = { handlePermissions(promptRequest, false, false, false) },
+                ) {
+                    handleRequiredPermissionRequest(
+                        addon,
+                        promptRequest,
+                    )
+                }
 
             is WebExtensionPromptRequest.AfterInstallation.Permissions.Optional ->
                 handleOptionalPermissionsRequest(

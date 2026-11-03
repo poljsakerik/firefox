@@ -20,6 +20,9 @@ object MirlumiConfig {
     /** Statements such as "You're protected", which must not imply child safety in this baseline. */
     val protectionClaimsEnabled: Boolean = false
 
+    /** A parent's PIN in front of Settings and everything else that changes the browser: [app.mirlumi.settingslock]. */
+    val settingsLockEnabled: Boolean = true
+
     /** The public site for [locale]: mirlumi.si in Slovenian, mirlumi.com otherwise. */
     fun siteUrl(locale: Locale): String =
         if (locale.language == "sl") {

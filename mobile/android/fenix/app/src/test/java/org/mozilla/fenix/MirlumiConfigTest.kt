@@ -34,6 +34,11 @@ class MirlumiConfigTest {
     }
 
     @Test
+    fun `settings are behind the parent's PIN`() {
+        assertTrue(MirlumiConfig.settingsLockEnabled)
+    }
+
+    @Test
     fun `no remote experiments are fetched`() {
         assertNull(BuildConfig.NIMBUS_ENDPOINT)
         assertEquals("", BuildConfig.WALLPAPER_URL)
