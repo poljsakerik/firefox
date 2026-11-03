@@ -30,7 +30,12 @@
     </plurals>
     <string name="mirlumi_pin_cancel">Prekliči</string>
     <string name="mirlumi_pin_delete">Izbriši</string>
-    <string name="mirlumi_pin_progress">Vnesenih števk: %1$d od %2$d</string>
+    <plurals name="mirlumi_pin_progress">
+        <item quantity="one">Vnesena %1$d števka od %2$d</item>
+        <item quantity="two">Vneseni %1$d števki od %2$d</item>
+        <item quantity="few">Vnesene %1$d števke od %2$d</item>
+        <item quantity="other">Vnesenih %1$d števk od %2$d</item>
+    </plurals>
     <string name="mirlumi_pin_preference_title">Spremeni PIN za nastavitve</string>
     <string name="mirlumi_pin_preference_summary">PIN, ki ščiti nastavitve</string>
 </resources>

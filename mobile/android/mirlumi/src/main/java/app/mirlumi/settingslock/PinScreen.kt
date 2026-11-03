@@ -124,7 +124,7 @@ internal fun PinScreen(
 
 @Composable
 private fun Dots(entered: Int) {
-    val description = stringResource(R.string.mirlumi_pin_progress, entered, SettingsPin.LENGTH)
+    val description = pluralStringResource(R.plurals.mirlumi_pin_progress, entered, entered, SettingsPin.LENGTH)
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.semantics { contentDescription = description },

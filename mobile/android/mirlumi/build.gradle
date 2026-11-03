@@ -52,6 +52,9 @@ dependencies {
     implementation libs.androidx.preference
 
     testImplementation libs.junit4
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.test.junit
+    testImplementation libs.robolectric
 
     detektPlugins project(":components:tooling-detekt")
 }

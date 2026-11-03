@@ -27,8 +27,11 @@
     </plurals>
     <string name="mirlumi_pin_cancel">Cancel</string>
     <string name="mirlumi_pin_delete">Delete</string>
-    <!-- Read by screen readers: %1$d digits of %2$d entered. -->
-    <string name="mirlumi_pin_progress">%1$d of %2$d digits entered</string>
+    <!-- Read by screen readers: %1$d digits entered of the PIN's %2$d. -->
+    <plurals name="mirlumi_pin_progress">
+        <item quantity="one">%1$d digit of %2$d entered</item>
+        <item quantity="other">%1$d digits of %2$d entered</item>
+    </plurals>
     <string name="mirlumi_pin_preference_title">Change Settings PIN</string>
     <string name="mirlumi_pin_preference_summary">The PIN that protects Settings</string>
 </resources>
