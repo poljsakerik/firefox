@@ -29,6 +29,9 @@ object MirlumiConfig {
     /** Only sites on the list for children, and sites a parent allowed with the PIN, open: [app.mirlumi.allowlist]. */
     val allowlistEnabled: Boolean = true
 
+    /** Hiding and blocking short-form video and app prompts: [app.mirlumi.contentrules.ContentRules]. */
+    val contentRulesEnabled: Boolean = true
+
     /** The public site for [locale]: mirlumi.si in Slovenian, mirlumi.com otherwise. */
     fun siteUrl(locale: Locale): String =
         if (locale.language == "sl") {

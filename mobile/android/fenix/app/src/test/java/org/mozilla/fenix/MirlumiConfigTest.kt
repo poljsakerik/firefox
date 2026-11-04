@@ -60,6 +60,11 @@ class MirlumiConfigTest {
     }
 
     @Test
+    fun `content rules are on`() {
+        assertTrue(MirlumiConfig.contentRulesEnabled)
+    }
+
+    @Test
     fun `only English and Slovenian are offered`() {
         assertEquals(listOf("en-US", "sl"), BuildConfig.SUPPORTED_LOCALE_ARRAY.sorted())
     }
