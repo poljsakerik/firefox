@@ -43,6 +43,8 @@ class SearchEngineFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragm
             R.xml.search_settings_preferences,
             rootKey,
         )
+        requirePreference<Preference>(R.string.pref_key_manage_search_shortcuts).isVisible =
+            !MirlumiConfig.onlyDuckDuckGoEnabled
 
         requirePreference<SwitchPreferenceCompat>(R.string.pref_key_show_sponsored_suggestions).apply {
             isVisible = context.components.settings.enableFxSuggest

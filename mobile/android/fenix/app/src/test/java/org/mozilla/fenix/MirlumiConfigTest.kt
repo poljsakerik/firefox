@@ -44,6 +44,11 @@ class MirlumiConfigTest {
     }
 
     @Test
+    fun `DuckDuckGo is the only search engine`() {
+        assertTrue(MirlumiConfig.onlyDuckDuckGoEnabled)
+    }
+
+    @Test
     fun `only allowed sites open`() {
         assertTrue(MirlumiConfig.allowlistEnabled)
     }

@@ -28,6 +28,7 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
 import org.mozilla.fenix.nimbus.DefaultBrowserPrompt
@@ -66,6 +67,14 @@ class SettingsTest {
     @Before
     fun setUp() {
         settings = Settings(testContext)
+    }
+
+    @Test
+    fun `Google Lens stays off while DuckDuckGo is the only search engine`() {
+        settings.googleLensIntegrationEnabled = true
+
+        assertTrue(MirlumiConfig.onlyDuckDuckGoEnabled)
+        assertFalse(settings.googleLensIntegrationEnabled)
     }
 
     @Test

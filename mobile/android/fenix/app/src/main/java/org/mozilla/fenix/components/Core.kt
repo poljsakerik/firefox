@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import app.mirlumi.allowlist.Allowlist
 import app.mirlumi.contentrules.ContentRules
 import app.mirlumi.safesearch.SafeSearch
+import app.mirlumi.searchengines.OnlyDuckDuckGo
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -343,7 +344,7 @@ class Core(
                 }
 
         val middlewareList =
-            listOf(
+            listOfNotNull(
                 ProfileMarkerMiddleware(markerName = "BrowserStore", profiler = engine.profiler),
                 LogMiddleware(tag = "BrowserStore", shouldIncludeDetailedData = { Config.channel.isDebug }),
                 LastAccessMiddleware(),
@@ -371,6 +372,7 @@ class Core(
                 ThumbnailsMiddleware(thumbnailStorage),
                 UndoMiddleware(context.components.settings.getUndoDelay()),
                 RegionMiddleware(context, locationService, applicationScope = applicationScope),
+                OnlyDuckDuckGo().takeIf { MirlumiConfig.onlyDuckDuckGoEnabled },
                 SearchMiddleware(
                     context = context,
                     additionalBundledSearchEngineIds = ADDITIONAL_BUNDLED_SEARCH_ENGINE_IDS,

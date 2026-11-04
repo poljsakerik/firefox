@@ -26,6 +26,12 @@ object MirlumiConfig {
     /** DuckDuckGo searches always on its strict safe search host, safe.duckduckgo.com: [app.mirlumi.safesearch]. */
     val safeSearchEnabled: Boolean = true
 
+    /**
+     * DuckDuckGo the only search engine, with no others to choose, add or search once with, and no Google Lens:
+     * [app.mirlumi.searchengines.OnlyDuckDuckGo].
+     */
+    val onlyDuckDuckGoEnabled: Boolean = true
+
     /** Only sites on the list for children, and sites a parent allowed with the PIN, open: [app.mirlumi.allowlist]. */
     val allowlistEnabled: Boolean = true
 

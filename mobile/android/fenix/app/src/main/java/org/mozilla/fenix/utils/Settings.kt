@@ -46,6 +46,7 @@ import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.GleanMetrics.TopSites
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.autofill.address.RegionAddressFeatureGate
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
@@ -3330,7 +3331,13 @@ class Settings(
             default = true,
         )
 
-    var googleLensIntegrationEnabled by
+    var googleLensIntegrationEnabled: Boolean
+        get() = !MirlumiConfig.onlyDuckDuckGoEnabled && googleLensIntegrationPreference
+        set(value) {
+            googleLensIntegrationPreference = value
+        }
+
+    private var googleLensIntegrationPreference by
         booleanPreference(
             key = appContext.getPreferenceKey(R.string.pref_key_google_lens_integration),
             default = { FxNimbus.features.googleLensIntegration.value().enabled },

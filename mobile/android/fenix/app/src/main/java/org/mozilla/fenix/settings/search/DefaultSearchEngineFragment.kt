@@ -10,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import mozilla.components.support.ktx.android.view.hideKeyboard
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
 import org.mozilla.fenix.ext.getPreferenceKey
@@ -20,6 +21,8 @@ class DefaultSearchEngineFragment : PreferenceFragmentCompat(), SystemInsetsPadd
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.default_search_engine_preferences, rootKey)
+        findPreference<Preference>(getPreferenceKey(R.string.pref_key_add_search_engine))?.isVisible =
+            !MirlumiConfig.onlyDuckDuckGoEnabled
     }
 
     override fun onResume() {
