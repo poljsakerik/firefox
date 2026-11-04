@@ -26,6 +26,7 @@
   const RECHECK_DELAY_MS = 150;
   const HIDE_AFTER_TEXT = 200;
   const ATTRIBUTE_READ_MS = 100;
+  const SMALL_CHANGE_DELAY_MS = 300;
   const root = document.documentElement;
   const token = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -132,8 +133,8 @@
     scheduleCheck(RECHECK_DELAY_MS);
   }
 
-  // Attribute changes can reveal hidden text, but animations make them constantly, so they're compared at most once
-  // every ATTRIBUTE_READ_MS, with one read after the last change.
+  // Attribute changes can reveal hidden text, but animations make them constantly. A change on elements holding real
+  // text is compared at once; others at most once every ATTRIBUTE_READ_MS, with one read after the last change.
   let lastAttributeRead = 0;
   let attributeRead = null;
   function attributeChanged() {
@@ -151,16 +152,32 @@
     }
   }
 
+  // Text changes too small to hide the page at once, such as a new title, are still compared once they settle.
+  let smallChangeRead = null;
+  function smallChange() {
+    if (smallChangeRead !== null) return;
+    smallChangeRead = setTimeout(() => {
+      smallChangeRead = null;
+      if (!finished && cleared !== null && recheck === null) compareToCleared();
+    }, SMALL_CHANGE_DELAY_MS);
+  }
+
   function watch() {
     new MutationObserver((records) => {
       if (finished || cleared === null) return;
       records = records.filter((record) => record.type !== "attributes" || record.attributeName !== MirlumiPageCheckAttribute);
       if (!records.length) return;
       addedSinceClear += MirlumiPageText.textAdded(records);
-      if (location.href !== clearedAddress || addedSinceClear >= HIDE_AFTER_TEXT) {
+      if (
+        location.href !== clearedAddress ||
+        addedSinceClear >= HIDE_AFTER_TEXT ||
+        MirlumiPageText.attributeText(records) >= HIDE_AFTER_TEXT
+      ) {
         compareToCleared();
       } else if (records.some((record) => record.type === "attributes")) {
         attributeChanged();
+      } else {
+        smallChange();
       }
     }).observe(root, { subtree: true, childList: true, characterData: true, attributes: true });
     for (const event of ["popstate", "hashchange"]) {

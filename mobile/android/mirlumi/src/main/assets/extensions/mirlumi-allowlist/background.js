@@ -193,7 +193,7 @@ browser.webRequest.onBeforeRequest.addListener(
 async function startPage(token, sender) {
   await modeChange;
   if (isAllowed(sender.url)) return { check: false };
-  if (!openMode || typeof token !== "string") return { revoke: true };
+  if (!openMode || typeof token !== "string" || flaggedLabel(sender.url)) return { revoke: true };
   documents.set(sender.tab.id, { token, revision: 0 });
   return { check: true };
 }
@@ -218,12 +218,24 @@ async function checkPage(message, sender) {
   };
   const { flagged } = MirlumiPageClassifier.checkPage(await loadModel(), fields);
   if (documents.get(tabId) !== current || current.revision !== message.revision) return { stale: true };
-  if (!flagged) return { clear: message.revision };
+  // Another page may have flagged the site while this one was checked.
+  if (!flagged) return flaggedLabel(sender.url) ? { blocked: true } : { clear: message.revision };
   const entry = siteEntry(sender.url);
   if (!entry) return { failed: true };
   flaggedSites.set(entry, flagged);
   documents.delete(tabId);
+  revokeFlaggedPages();
   return { blocked: true };
+}
+
+// Open pages of a site flagged since they were cleared load again, and the request listener blocks them.
+function revokeFlaggedPages() {
+  for (const pagePort of pagePorts) {
+    if (flaggedLabel(pagePort.sender.url)) {
+      documents.delete(pagePort.sender.tab?.id);
+      pagePort.postMessage({ type: "revoke" });
+    }
+  }
 }
 
 // The page's check timed out or failed: its next load goes to the "couldn't be checked" page.
