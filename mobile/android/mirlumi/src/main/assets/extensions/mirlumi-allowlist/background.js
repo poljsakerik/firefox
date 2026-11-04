@@ -9,7 +9,9 @@
 // from packages/page-classifier checks them: page-check.js keeps each such page hidden until its text is cleared, and
 // checks it again when it changes without loading. A page it flags, or can't check in time, goes to the blocked page
 // with the reason. DuckDuckGo searches it flags are blocked before they load. A site flagged once is blocked for the
-// rest of the session, unless a parent allows it.
+// rest of the session, unless a parent allows it. Frames are checked like pages, each on its own: a frame of a flagged
+// site gets the blocked page in its place, and a frame without an address of its own, such as srcdoc, is judged with
+// the page that holds it.
 
 "use strict";
 
@@ -37,7 +39,7 @@ const SHOWN_ATTRIBUTE = `data-mirlumi-${crypto.randomUUID().replace(/-/g, "")}`;
 // The document being checked in each tab, with its latest revision; tabs whose check failed, with the address; the
 // open pages' ports; and flagged sites, by the entry an approval would add.
 const documents = new Map();
-const uncheckedTabs = new Map();
+const uncheckedFrames = new Map();
 const pagePorts = new Set();
 const flaggedSites = new Map();
 
@@ -111,6 +113,8 @@ async function applyOpenMode(open) {
           { file: "page-check.js" },
         ],
         runAt: "document_start",
+        allFrames: true,
+        matchAboutBlank: true,
       });
       openMode = true;
     } catch (e) {
@@ -124,6 +128,18 @@ async function applyOpenMode(open) {
   const registered = pageCheckScript;
   pageCheckScript = null;
   await registered?.unregister().catch(() => {});
+}
+
+// Checks are tracked per frame. A frame without an http address, such as about:srcdoc, belongs to the page holding it.
+const frameKey = (tabId, frameId) => `${tabId}:${frameId}`;
+const senderKey = (sender) => frameKey(sender.tab.id, sender.frameId);
+const ownAddress = (url) => /^https?:/i.test(url ?? "");
+const pageUrl = (sender) => (ownAddress(sender.url) ? sender.url : sender.tab?.url ?? "");
+
+function forgetTab(tabId) {
+  for (const key of [...documents.keys()]) {
+    if (key.startsWith(`${tabId}:`)) documents.delete(key);
+  }
 }
 
 function siteEntry(url) {
@@ -160,9 +176,9 @@ async function openModeBlock(url) {
 
 browser.webRequest.onBeforeRequest.addListener(
   async (details) => {
-    documents.delete(details.tabId);
-    const unchecked = uncheckedTabs.get(details.tabId);
-    uncheckedTabs.delete(details.tabId);
+    forgetTab(details.tabId);
+    const unchecked = uncheckedFrames.get(frameKey(details.tabId, 0));
+    uncheckedFrames.delete(frameKey(details.tabId, 0));
     if (unchecked === details.url.split("#")[0] && !isAllowed(details.url)) {
       return { redirectUrl: blockedPage(details.url, "unchecked") };
     }
@@ -187,14 +203,33 @@ browser.webRequest.onBeforeRequest.addListener(
   ["blocking"]
 );
 
+// In open mode, a frame of a flagged site, or one whose check failed, gets the blocked page in its place. Allowlist-only
+// browsing leaves frames alone, as before.
+browser.webRequest.onBeforeRequest.addListener(
+  async (details) => {
+    const key = frameKey(details.tabId, details.frameId);
+    documents.delete(key);
+    const unchecked = uncheckedFrames.get(key);
+    uncheckedFrames.delete(key);
+    await modeChange;
+    if (!openMode || isAllowed(details.url)) return {};
+    if (unchecked === details.url.split("#")[0]) return { redirectUrl: blockedPage(details.url, "unchecked") };
+    const flagged = flaggedLabel(details.url);
+    return flagged ? { redirectUrl: blockedPage(details.url, flagged) } : {};
+  },
+  { urls: ["http://*/*", "https://*/*"], types: ["sub_frame"] },
+  ["blocking"]
+);
+
 // page-check.js reports at the start of every page while it's registered. A page that isn't allowed becomes the tab's
 // document under check, named by the token the script chose. If open mode went off since the page was requested, the
 // page loads again under allowlist-only browsing.
 async function startPage(token, sender) {
   await modeChange;
-  if (isAllowed(sender.url)) return { check: false };
-  if (!openMode || typeof token !== "string" || flaggedLabel(sender.url)) return { revoke: true };
-  documents.set(sender.tab.id, { token, revision: 0 });
+  const url = pageUrl(sender);
+  if (isAllowed(url)) return { check: false };
+  if (!openMode || typeof token !== "string" || flaggedLabel(url)) return { revoke: true };
+  documents.set(senderKey(sender), { token, revision: 0 });
   return { check: true };
 }
 
@@ -203,8 +238,9 @@ async function startPage(token, sender) {
 // request listener sends to the blocked page: GeckoView only lets an extension change a tab through the app, which
 // built-in extensions don't get, and a page can't open an extension page itself.
 async function checkPage(message, sender) {
-  const tabId = sender.tab.id;
-  const current = documents.get(tabId);
+  const key = senderKey(sender);
+  const url = pageUrl(sender);
+  const current = documents.get(key);
   if (!openMode || !current || current.token !== message.document) return { failed: true };
   if (!Number.isInteger(message.revision) || message.revision <= current.revision) return { stale: true };
   current.revision = message.revision;
@@ -217,13 +253,13 @@ async function checkPage(message, sender) {
     body: text(page?.body, 8000),
   };
   const { flagged } = MirlumiPageClassifier.checkPage(await loadModel(), fields);
-  if (documents.get(tabId) !== current || current.revision !== message.revision) return { stale: true };
+  if (documents.get(key) !== current || current.revision !== message.revision) return { stale: true };
   // Another page may have flagged the site while this one was checked.
-  if (!flagged) return flaggedLabel(sender.url) ? { blocked: true } : { clear: message.revision };
-  const entry = siteEntry(sender.url);
+  if (!flagged) return flaggedLabel(url) ? { blocked: true } : { clear: message.revision };
+  const entry = siteEntry(url);
   if (!entry) return { failed: true };
   flaggedSites.set(entry, flagged);
-  documents.delete(tabId);
+  documents.delete(key);
   revokeFlaggedPages();
   return { blocked: true };
 }
@@ -231,8 +267,8 @@ async function checkPage(message, sender) {
 // Open pages of a site flagged since they were cleared load again, and the request listener blocks them.
 function revokeFlaggedPages() {
   for (const pagePort of pagePorts) {
-    if (flaggedLabel(pagePort.sender.url)) {
-      documents.delete(pagePort.sender.tab?.id);
+    if (flaggedLabel(pageUrl(pagePort.sender))) {
+      documents.delete(senderKey(pagePort.sender));
       pagePort.postMessage({ type: "revoke" });
     }
   }
@@ -240,17 +276,17 @@ function revokeFlaggedPages() {
 
 // The page's check timed out or failed: its next load goes to the "couldn't be checked" page.
 function pageFailed(message, sender) {
-  const tabId = sender.tab.id;
-  if (documents.get(tabId)?.token === message.document || !documents.has(tabId)) {
-    documents.delete(tabId);
-    uncheckedTabs.set(tabId, sender.url.split("#")[0]);
+  const key = senderKey(sender);
+  if (documents.get(key)?.token === message.document || !documents.has(key)) {
+    documents.delete(key);
+    uncheckedFrames.set(key, sender.url.split("#")[0]);
   }
   return {};
 }
 
-// page-check.js, in a page's top frame, reports its start, sends what it read, and reports failures.
+// page-check.js, in every frame of a page, reports its start, sends what it read, and reports failures.
 browser.runtime.onMessage.addListener((message, sender) => {
-  if (sender.frameId !== 0 || !sender.tab || sender.url?.startsWith(BLOCKED_PAGE)) return undefined;
+  if (!sender.tab || sender.url?.startsWith(BLOCKED_PAGE)) return undefined;
   switch (message?.type) {
     case "pageStart":
       return startPage(message.document, sender);
@@ -265,7 +301,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
 // A checked page keeps a port open, so turning open mode off can make it load again.
 browser.runtime.onConnect.addListener((pagePort) => {
-  if (pagePort.name !== "mirlumiPageCheck" || pagePort.sender?.frameId !== 0) return;
+  if (pagePort.name !== "mirlumiPageCheck" || !pagePort.sender?.tab) return;
   if (!openMode) {
     pagePort.postMessage({ type: "revoke" });
     return;

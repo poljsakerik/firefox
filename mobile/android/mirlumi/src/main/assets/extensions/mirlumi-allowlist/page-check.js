@@ -56,7 +56,10 @@
   let timeout = null;
   let recheck = null;
 
-  const reload = () => location.replace(location.href.split("#")[0]);
+  // A frame without an address of its own, such as srcdoc, can't load again: it stays hidden, and its page is blocked.
+  const reload = () => {
+    if (/^https?:$/.test(location.protocol)) location.replace(location.href.split("#")[0]);
+  };
 
   // A flagged or unchecked page loads again; the background script sends that load to the blocked page.
   function leave(type) {
