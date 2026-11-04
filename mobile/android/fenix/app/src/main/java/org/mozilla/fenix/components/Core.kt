@@ -10,6 +10,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import app.mirlumi.allowlist.Allowlist
 import app.mirlumi.contentrules.ContentRules
+import app.mirlumi.imagecheck.ImageCheck
 import app.mirlumi.safesearch.SafeSearch
 import app.mirlumi.searchengines.OnlyDuckDuckGo
 import java.util.concurrent.TimeUnit
@@ -273,6 +274,7 @@ class Core(
                 SafeSearch.install(it, MirlumiConfig.safeSearchEnabled)
                 Allowlist.install(context, it, MirlumiConfig.allowlistEnabled)
                 ContentRules.install(it, MirlumiConfig.contentRulesEnabled)
+                ImageCheck.install(context, it, MirlumiConfig.imageCheckEnabled)
             }
     }
 

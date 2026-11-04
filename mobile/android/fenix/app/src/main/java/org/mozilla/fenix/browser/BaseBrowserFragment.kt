@@ -42,6 +42,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
+import app.mirlumi.imagecheck.ImageCheck
 import com.google.android.material.R as materialR
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar.LENGTH_LONG
@@ -607,7 +608,8 @@ abstract class BaseBrowserFragment :
                 ContextMenuFeature(
                     fragmentManager = parentFragmentManager,
                     store = store,
-                    candidates = getContextMenuCandidates(context, binding.dynamicSnackbarContainer),
+                    candidates =
+                        ImageCheck.contextMenu(getContextMenuCandidates(context, binding.dynamicSnackbarContainer)),
                     engineView = binding.engineView,
                     useCases = context.components.useCases.contextMenuUseCases,
                     tabId = customTabSessionId,

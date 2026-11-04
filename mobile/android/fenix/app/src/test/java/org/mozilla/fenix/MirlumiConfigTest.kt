@@ -70,6 +70,11 @@ class MirlumiConfigTest {
     }
 
     @Test
+    fun `image check is on`() {
+        assertTrue(MirlumiConfig.imageCheckEnabled)
+    }
+
+    @Test
     fun `only English and Slovenian are offered`() {
         assertEquals(listOf("en-US", "sl"), BuildConfig.SUPPORTED_LOCALE_ARRAY.sorted())
     }

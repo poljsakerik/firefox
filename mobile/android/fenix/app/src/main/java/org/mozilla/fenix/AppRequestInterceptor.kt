@@ -11,6 +11,7 @@ import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import app.mirlumi.allowlist.Allowlist
+import app.mirlumi.imagecheck.ImageCheck
 import java.lang.ref.WeakReference
 import mozilla.components.browser.errorpages.ErrorPages
 import mozilla.components.browser.state.state.selectedOrDefaultSearchEngine
@@ -51,6 +52,9 @@ class AppRequestInterceptor(
         isSubframeRequest: Boolean,
     ): RequestInterceptor.InterceptionResponse? {
         Allowlist.interceptLoad(uri, isSubframeRequest)?.let {
+            return it
+        }
+        ImageCheck.interceptLoad(uri, isSubframeRequest)?.let {
             return it
         }
 

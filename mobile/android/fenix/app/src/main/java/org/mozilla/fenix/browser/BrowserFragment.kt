@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import app.mirlumi.imagecheck.ImageCheck
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
@@ -293,7 +294,9 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
                         store = context.components.core.store,
                         controlsView = binding.readerViewControlsBar,
                         onReaderViewStatusChange = { available, active ->
-                            browserScreenStore.dispatch(ReaderModeStatusUpdated(ReaderModeStatus(available, active)))
+                            val shown = available && ImageCheck.allowsReaderView
+                            if (active && !ImageCheck.allowsReaderView) readerMenuController.hideReaderView()
+                            browserScreenStore.dispatch(ReaderModeStatusUpdated(ReaderModeStatus(shown, active)))
                         },
                     )
                 },

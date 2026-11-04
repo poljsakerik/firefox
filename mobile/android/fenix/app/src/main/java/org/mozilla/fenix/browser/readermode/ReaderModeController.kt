@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.RadioButton
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.content.res.AppCompatResources
+import app.mirlumi.imagecheck.ImageCheck
 import mozilla.components.feature.readerview.R as readerviewR
 import mozilla.components.feature.readerview.ReaderViewFeature
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
@@ -61,6 +62,7 @@ class DefaultReaderModeController(
     }
 
     override fun showReaderView() {
+        if (!ImageCheck.allowsReaderView) return
         onReaderModeChanged()
         readerViewFeature.withFeature { it.showReaderView() }
     }

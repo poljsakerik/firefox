@@ -38,6 +38,9 @@ object MirlumiConfig {
     /** Hiding and blocking short-form video and app prompts: [app.mirlumi.contentrules.ContentRules]. */
     val contentRulesEnabled: Boolean = true
 
+    /** Images hidden until checked, and explicit ones replaced: [app.mirlumi.imagecheck.ImageCheck]. */
+    val imageCheckEnabled: Boolean = true
+
     /** The public site for [locale]: mirlumi.si in Slovenian, mirlumi.com otherwise. */
     fun siteUrl(locale: Locale): String =
         if (locale.language == "sl") {
