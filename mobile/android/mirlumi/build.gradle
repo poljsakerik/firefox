@@ -3,6 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Mirlumi's own features, kept out of upstream files so that a Firefox update rebases a few small hooks.
+//
+// The built-in web extensions in src/main/assets/extensions/ take their generated/ files from the packages in the mirlumi
+// repository.
+
+import groovy.json.JsonSlurper
 
 import static org.mozilla.conventions.BuildConfigKt.updateExtensionVersion
 
@@ -22,6 +27,10 @@ android {
     buildFeatures {
         compose = true
     }
+    androidResources {
+        // manifest.template.json becomes manifest.json at build time.
+        ignoreAssetsPattern = "manifest.template.json"
+    }
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -39,7 +48,11 @@ mozilla {
 }
 
 // A new version on every build, so GeckoView reinstalls each built-in extension and never runs older files.
-def extensionVersionTasks = ["SafeSearch": "mirlumi-safe-search", "Allowlist": "mirlumi-allowlist"].collect { name, dir ->
+def extensionVersionTasks = [
+    "SafeSearch": "mirlumi-safe-search",
+    "Allowlist": "mirlumi-allowlist",
+    "ContentRules": "mirlumi-content-rules",
+].collect { name, dir ->
     def taskName = "update${name}ExtensionVersion"
     tasks.register(taskName, Copy) { task ->
         updateExtensionVersion(task, "src/main/assets/extensions/$dir", rootProject.ext.config.componentsVersion)
@@ -50,6 +63,19 @@ def extensionVersionTasks = ["SafeSearch": "mirlumi-safe-search", "Allowlist": "
 // The lint tasks read the module directory that the manifests are written into.
 tasks.matching { it.name.startsWith("spotless") || it.name.startsWith("detekt") }.configureEach {
     mustRunAfter extensionVersionTasks
+}
+
+// The committed debug private key can sign rules that keys/release.pem accepts while it's the placeholder copy, so no
+// build that could be distributed may trust it. Only the debug build type is Mirlumi's development build.
+def contentRulesConfig = file("src/main/assets/extensions/mirlumi-content-rules/generated/config.json")
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach {
+    inputs.file(contentRulesConfig)
+    doFirst {
+        if (new JsonSlurper().parse(contentRulesConfig).placeholderKey) {
+            throw new GradleException("Content rules still trust the placeholder signing key. Create the real one first: " +
+                "\"Signing keys\" in packages/content-rules/README.md in the mirlumi repository.")
+        }
+    }
 }
 
 dependencies {

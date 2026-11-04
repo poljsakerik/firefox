@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "content-rules@mirlumi.app"
+    }
+  },
+  "name": "Mirlumi content rules",
+  "version": "${version}",
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["generated/engine.js", "generated/rules.js", "content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "background": {
+    "scripts": ["generated/rules.js", "generated/validate.js", "background.js"],
+    "persistent": false
+  },
+  "permissions": ["alarms", "storage", "https://mirlumi.com/*"]
+}
