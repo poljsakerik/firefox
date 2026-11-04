@@ -120,6 +120,8 @@
 
         <app.mirlumi.settingslock.SettingsPinPreference android:key="mirlumi_settings_pin" />
 
+        <app.mirlumi.allowlist.AllowedSitesPreference android:key="mirlumi_allowed_sites" />
+
         <androidx.preference.Preference
             android:key="@string/pref_key_private_browsing"
             app:iconSpaceReserved="false"

@@ -45,6 +45,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
+import app.mirlumi.allowlist.Allowlist
 import app.mirlumi.settingslock.SettingsLock
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers.IO
@@ -685,6 +686,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, Crash
         SettingsLock.install(this, navHost.navController, MirlumiConfig.settingsLockEnabled) {
             components.fenixOnboarding.userHasBeenOnboarded()
         }
+        Allowlist.attach(this)
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(
             StatusBarColorManager(

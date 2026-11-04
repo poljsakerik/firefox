@@ -44,6 +44,11 @@ class MirlumiConfigTest {
     }
 
     @Test
+    fun `only allowed sites open`() {
+        assertTrue(MirlumiConfig.allowlistEnabled)
+    }
+
+    @Test
     fun `no remote experiments are fetched`() {
         assertNull(BuildConfig.NIMBUS_ENDPOINT)
         assertEquals("", BuildConfig.WALLPAPER_URL)

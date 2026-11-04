@@ -10,6 +10,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import app.mirlumi.allowlist.Allowlist
 import java.lang.ref.WeakReference
 import mozilla.components.browser.errorpages.ErrorPages
 import mozilla.components.browser.state.state.selectedOrDefaultSearchEngine
@@ -49,8 +50,12 @@ class AppRequestInterceptor(
         isDirectNavigation: Boolean,
         isSubframeRequest: Boolean,
     ): RequestInterceptor.InterceptionResponse? {
-        interceptErrorPageAction(uri)?.let {
+        Allowlist.interceptLoad(uri, isSubframeRequest)?.let {
             return it
+        }
+
+        interceptErrorPageAction(uri)?.let {
+            return Allowlist.checkReplacement(it)
         }
 
         if (interceptAboutHomeRequest(uri)) {
@@ -75,6 +80,7 @@ class AppRequestInterceptor(
                     isSubframeRequest,
                 )
             }
+            .let(Allowlist::checkReplacement)
     }
 
     override fun onErrorRequest(

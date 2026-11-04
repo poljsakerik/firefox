@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.res.Configuration
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
+import app.mirlumi.allowlist.Allowlist
 import app.mirlumi.safesearch.SafeSearch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
@@ -268,6 +269,7 @@ class Core(
             .also {
                 WebCompatFeature.install(it)
                 SafeSearch.install(it, MirlumiConfig.safeSearchEnabled)
+                Allowlist.install(context, it, MirlumiConfig.allowlistEnabled)
             }
     }
 
