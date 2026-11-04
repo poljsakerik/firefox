@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "image-check@mirlumi.app"
+    }
+  },
+  "name": "Mirlumi image check",
+  "version": "${version}",
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["generated/engine.js", "generated/config.js", "check.js", "content.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true,
+      "match_origin_as_fallback": true
+    }
+  ],
+  "background": {
+    "scripts": ["generated/config.js", "background.js"]
+  },
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "http://*/*",
+    "https://*/*",
+    "nativeMessaging",
+    "geckoViewAddons"
+  ],
+  "web_accessible_resources": ["viewer.html"]
+}

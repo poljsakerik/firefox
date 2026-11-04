@@ -23,6 +23,7 @@ android {
     }
     defaultConfig {
         minSdk config.minSdkVersion
+        consumerProguardFiles "proguard-rules.pro"
     }
     buildFeatures {
         compose = true
@@ -52,6 +53,7 @@ def extensionVersionTasks = [
     "SafeSearch": "mirlumi-safe-search",
     "Allowlist": "mirlumi-allowlist",
     "ContentRules": "mirlumi-content-rules",
+    "ImageCheck": "mirlumi-image-check",
 ].collect { name, dir ->
     def taskName = "update${name}ExtensionVersion"
     tasks.register(taskName, Copy) { task ->
@@ -82,6 +84,7 @@ dependencies {
     implementation project(':components:browser-state')
     implementation project(':components:compose-base')
     implementation project(':components:concept-engine')
+    implementation project(':components:feature-contextmenu')
     implementation project(':components:lib-dataprotect')
     implementation project(':components:lib-state')
     implementation project(':components:support-base')
@@ -98,6 +101,9 @@ dependencies {
     implementation libs.androidx.lifecycle.viewmodel
     implementation libs.androidx.navigation.fragment
     implementation libs.androidx.preference
+
+    // Runs the image check's model. Its ONNX file and model.json come from packages/image-check.
+    implementation "com.microsoft.onnxruntime:onnxruntime-android:1.24.2"
 
     testImplementation libs.junit4
     testImplementation libs.androidx.test.core
