@@ -25,6 +25,7 @@
   const CHECK_TIMEOUT_MS = 3000;
   const RECHECK_DELAY_MS = 150;
   const HIDE_AFTER_TEXT = 200;
+  const ATTRIBUTE_READ_MS = 100;
   const root = document.documentElement;
   const token = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -118,22 +119,49 @@
 
   // Once enough text arrived, or the address changed, the page is read right here, before it's painted. It's hidden
   // only if it changed enough to be checked again, so content that merely re-renders doesn't flicker.
+  // Reads the page and hides it if it changed enough since it was cleared. Runs inside the MutationObserver callback, so
+  // nothing changed is painted first.
+  function compareToCleared() {
+    addedSinceClear = 0;
+    const state = MirlumiPageText.pageState(location.href, MirlumiPageText.readPage(document));
+    if (!MirlumiPageText.changedEnough(cleared, state)) {
+      clearedAddress = location.href;
+      return;
+    }
+    hide();
+    scheduleCheck(RECHECK_DELAY_MS);
+  }
+
+  // Attribute changes can reveal hidden text, but animations make them constantly, so they're compared at most once
+  // every ATTRIBUTE_READ_MS, with one read after the last change.
+  let lastAttributeRead = 0;
+  let attributeRead = null;
+  function attributeChanged() {
+    if (attributeRead !== null) return;
+    const wait = lastAttributeRead + ATTRIBUTE_READ_MS - Date.now();
+    const run = () => {
+      attributeRead = null;
+      lastAttributeRead = Date.now();
+      if (!finished && cleared !== null && recheck === null) compareToCleared();
+    };
+    if (wait <= 0) {
+      run();
+    } else {
+      attributeRead = setTimeout(run, wait);
+    }
+  }
+
   function watch() {
     new MutationObserver((records) => {
       if (finished || cleared === null) return;
-      records = records.filter(record => record.type !== "attributes" || record.attributeName !== MirlumiPageCheckAttribute);
+      records = records.filter((record) => record.type !== "attributes" || record.attributeName !== MirlumiPageCheckAttribute);
       if (!records.length) return;
-      const visibilityChanged = records.some(record => record.type === "attributes");
       addedSinceClear += MirlumiPageText.textAdded(records);
-      if (!visibilityChanged && location.href === clearedAddress && addedSinceClear < HIDE_AFTER_TEXT) return;
-      addedSinceClear = 0;
-      const state = MirlumiPageText.pageState(location.href, MirlumiPageText.readPage(document));
-      if (!MirlumiPageText.changedEnough(cleared, state)) {
-        clearedAddress = location.href;
-        return;
+      if (location.href !== clearedAddress || addedSinceClear >= HIDE_AFTER_TEXT) {
+        compareToCleared();
+      } else if (records.some((record) => record.type === "attributes")) {
+        attributeChanged();
       }
-      hide();
-      scheduleCheck(RECHECK_DELAY_MS);
     }).observe(root, { subtree: true, childList: true, characterData: true, attributes: true });
     for (const event of ["popstate", "hashchange"]) {
       window.addEventListener(event, () => {
