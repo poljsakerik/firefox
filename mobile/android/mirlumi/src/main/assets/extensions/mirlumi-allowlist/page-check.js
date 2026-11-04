@@ -41,6 +41,8 @@
   new MutationObserver(() => {
     if (shown && !root.hasAttribute(MirlumiPageCheckAttribute)) {
       root.setAttribute(MirlumiPageCheckAttribute, "");
+    } else if (!shown && root.hasAttribute(MirlumiPageCheckAttribute)) {
+      root.removeAttribute(MirlumiPageCheckAttribute);
     }
   }).observe(root, { attributes: true, attributeFilter: [MirlumiPageCheckAttribute] });
 
@@ -82,6 +84,11 @@
         if (finished || mine !== revision) return;
         clearTimeout(timeout);
         if (reply && reply.clear === mine) {
+          const current = MirlumiPageText.pageState(location.href, MirlumiPageText.readPage(document));
+          if (MirlumiPageText.changedEnough(state, current)) {
+            check();
+            return;
+          }
           cleared = state;
           clearedAddress = state.address;
           addedSinceClear = 0;
@@ -114,8 +121,11 @@
   function watch() {
     new MutationObserver((records) => {
       if (finished || cleared === null) return;
+      records = records.filter(record => record.type !== "attributes" || record.attributeName !== MirlumiPageCheckAttribute);
+      if (!records.length) return;
+      const visibilityChanged = records.some(record => record.type === "attributes");
       addedSinceClear += MirlumiPageText.textAdded(records);
-      if (location.href === clearedAddress && addedSinceClear < HIDE_AFTER_TEXT) return;
+      if (!visibilityChanged && location.href === clearedAddress && addedSinceClear < HIDE_AFTER_TEXT) return;
       addedSinceClear = 0;
       const state = MirlumiPageText.pageState(location.href, MirlumiPageText.readPage(document));
       if (!MirlumiPageText.changedEnough(cleared, state)) {
@@ -124,7 +134,7 @@
       }
       hide();
       scheduleCheck(RECHECK_DELAY_MS);
-    }).observe(root, { subtree: true, childList: true, characterData: true });
+    }).observe(root, { subtree: true, childList: true, characterData: true, attributes: true });
     for (const event of ["popstate", "hashchange"]) {
       window.addEventListener(event, () => {
         hide();
