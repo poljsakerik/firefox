@@ -39,6 +39,11 @@ class MirlumiConfigTest {
     }
 
     @Test
+    fun `DuckDuckGo searches use strict safe search`() {
+        assertTrue(MirlumiConfig.safeSearchEnabled)
+    }
+
+    @Test
     fun `no remote experiments are fetched`() {
         assertNull(BuildConfig.NIMBUS_ENDPOINT)
         assertEquals("", BuildConfig.WALLPAPER_URL)

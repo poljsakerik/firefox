@@ -4,6 +4,8 @@
 
 // Mirlumi's own features, kept out of upstream files so that a Firefox update rebases a few small hooks.
 
+import static org.mozilla.conventions.BuildConfigKt.updateExtensionVersion
+
 plugins {
     id 'com.android.library'
     alias(libs.plugins.kotlin.compose)
@@ -36,9 +38,21 @@ mozilla {
     detektConfig = "$projectDir/../android-components/config/detekt.yml"
 }
 
+// A new version on every build, so GeckoView reinstalls the safe search extension and never runs older files.
+tasks.register("updateSafeSearchExtensionVersion", Copy) { task ->
+    updateExtensionVersion(task, 'src/main/assets/extensions/mirlumi-safe-search', rootProject.ext.config.componentsVersion)
+}
+preBuild.dependsOn "updateSafeSearchExtensionVersion"
+// The lint tasks read the module directory that the manifest is written into.
+tasks.matching { it.name.startsWith("spotless") || it.name.startsWith("detekt") }.configureEach {
+    mustRunAfter "updateSafeSearchExtensionVersion"
+}
+
 dependencies {
     implementation project(':components:compose-base')
+    implementation project(':components:concept-engine')
     implementation project(':components:lib-dataprotect')
+    implementation project(':components:support-base')
     implementation project(':components:ui-icons')
 
     implementation platform(libs.androidx.compose.bom)

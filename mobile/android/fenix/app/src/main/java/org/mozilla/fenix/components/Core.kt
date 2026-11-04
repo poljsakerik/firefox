@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.res.Configuration
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
+import app.mirlumi.safesearch.SafeSearch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -114,6 +115,7 @@ import org.mozilla.fenix.AppRequestInterceptor
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.IntentReceiverActivity
+import org.mozilla.fenix.MirlumiConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ReleaseChannel
 import org.mozilla.fenix.browser.desktopmode.DefaultDesktopModeRepository
@@ -265,6 +267,7 @@ class Core(
             )
             .also {
                 WebCompatFeature.install(it)
+                SafeSearch.install(it, MirlumiConfig.safeSearchEnabled)
             }
     }
 

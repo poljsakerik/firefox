@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "safe-search@mirlumi.app"
+    }
+  },
+  "name": "Mirlumi safe search",
+  "version": "${version}",
+  "background": {
+    "scripts": ["generated/safe-search.js", "background.js"],
+    "persistent": true
+  },
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "*://duckduckgo.com/*",
+    "*://*.duckduckgo.com/*",
+    "*://duckduckgo.com./*",
+    "*://*.duckduckgo.com./*"
+  ]
+}

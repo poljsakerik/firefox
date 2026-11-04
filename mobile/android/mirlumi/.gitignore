@@ -1,0 +1,2 @@
+# Written from manifest.template.json on every build.
+src/main/assets/extensions/*/manifest.json

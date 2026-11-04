@@ -23,6 +23,9 @@ object MirlumiConfig {
     /** A parent's PIN in front of Settings and everything else that changes the browser: [app.mirlumi.settingslock]. */
     val settingsLockEnabled: Boolean = true
 
+    /** DuckDuckGo searches always on its strict safe search host, safe.duckduckgo.com: [app.mirlumi.safesearch]. */
+    val safeSearchEnabled: Boolean = true
+
     /** The public site for [locale]: mirlumi.si in Slovenian, mirlumi.com otherwise. */
     fun siteUrl(locale: Locale): String =
         if (locale.language == "sl") {
