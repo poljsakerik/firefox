@@ -272,7 +272,12 @@ class Core(
             .also {
                 WebCompatFeature.install(it)
                 SafeSearch.install(it, MirlumiConfig.safeSearchEnabled)
-                Allowlist.install(context, it, MirlumiConfig.allowlistEnabled)
+                Allowlist.install(
+                    context,
+                    it,
+                    MirlumiConfig.allowlistEnabled,
+                    openModeAvailable = MirlumiConfig.pageClassifierEnabled,
+                )
                 ContentRules.install(it, MirlumiConfig.contentRulesEnabled)
                 ImageCheck.install(context, it, MirlumiConfig.imageCheckEnabled)
             }

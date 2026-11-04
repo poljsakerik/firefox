@@ -54,6 +54,12 @@ class MirlumiConfigTest {
     }
 
     @Test
+    fun `a parent can turn on open mode, which needs the allowlist`() {
+        assertTrue(MirlumiConfig.pageClassifierEnabled)
+        assertTrue(MirlumiConfig.allowlistEnabled)
+    }
+
+    @Test
     fun `no remote experiments are fetched`() {
         assertNull(BuildConfig.NIMBUS_ENDPOINT)
         assertEquals("", BuildConfig.WALLPAPER_URL)

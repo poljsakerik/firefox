@@ -35,6 +35,12 @@ object MirlumiConfig {
     /** Only sites on the list for children, and sites a parent allowed with the PIN, open: [app.mirlumi.allowlist]. */
     val allowlistEnabled: Boolean = true
 
+    /**
+     * Open mode, which a parent can turn on in Settings: pages that aren't on the list open, and the on-device page
+     * classifier blocks those it flags, and flagged DuckDuckGo searches. Needs [allowlistEnabled].
+     */
+    val pageClassifierEnabled: Boolean = true
+
     /** Hiding and blocking short-form video and app prompts: [app.mirlumi.contentrules.ContentRules]. */
     val contentRulesEnabled: Boolean = true
 

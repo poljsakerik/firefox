@@ -27,13 +27,50 @@
     host = "";
   }
 
+  // Why the page is blocked: not on the list, or flagged by the page classifier in open mode. Android passes the
+  // reason in the query, iOS in the root element's data-reason. "search:<category>" is a flagged search, and
+  // "unchecked" a page whose check timed out or failed ("search:unchecked" for a search).
+  let reason = document.documentElement.getAttribute("data-reason") || "";
+  if (extension) {
+    const match = /[?&]reason=([\w:]+)/.exec(location.search);
+    reason = match ? match[1] : "";
+  }
+  const isSearch = reason.startsWith("search:");
+  const category = text[`category.${reason.replace(/^search:/, "")}`];
+  const isUnchecked = reason.replace(/^search:/, "") === "unchecked";
+
   const element = (id) => document.getElementById(id);
   document.documentElement.lang = language;
-  document.title = text.title;
-  for (const id of ["title", "body", "parent", "failed", "allow", "back"]) {
-    element(id).textContent = text[id];
+  const shown = Object.assign({}, text);
+  if (isUnchecked) {
+    shown.title = text.uncheckedTitle;
+    shown.body = text.uncheckedBody;
+  } else if (category) {
+    shown.title = isSearch ? text.searchTitle : text.flaggedTitle;
+    shown.body = (isSearch ? text.searchBody : text.flaggedBody).replace("{category}", category);
+    shown.parent = text.flaggedParent;
+  }
+  document.title = shown.title;
+  for (const id of ["title", "body", "parent", "failed", "allow", "back", "retry"]) {
+    element(id).textContent = shown[id];
   }
   element("host").textContent = host;
+  // Allowing the search engine's site wouldn't let a blocked search through, so searches offer only Back.
+  if ((category || isUnchecked) && isSearch) {
+    element("parent").hidden = true;
+  }
+
+  // Loading the address again checks the page again. On Android the request goes back through the extension; on iOS
+  // the blocked page stands in the address's place, so a reload is a new load of it.
+  const retry = element("retry");
+  retry.hidden = !isUnchecked;
+  retry.addEventListener("click", () => {
+    if (extension) {
+      location.replace(blockedUrl);
+    } else {
+      location.reload();
+    }
+  });
 
   const back = element("back");
   back.hidden = history.length < 2;
@@ -42,7 +79,7 @@
   const allow = element("allow");
   const failed = element("failed");
   // Another site could frame this page to make a parent allow an address of its choosing.
-  allow.hidden = window.top !== window;
+  allow.hidden = window.top !== window || isSearch;
   allow.addEventListener("click", async () => {
     failed.hidden = true;
     if (!extension) {

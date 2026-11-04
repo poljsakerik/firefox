@@ -9,4 +9,6 @@
     <string name="mirlumi_allowed_sites_empty">Dovolili niste še nobene strani.</string>
     <string name="mirlumi_allowed_sites_remove">Odstrani</string>
     <string name="mirlumi_allowed_sites_close">Zapri</string>
+    <string name="mirlumi_open_mode_title">Odpri vse strani, blokiraj tvegane</string>
+    <string name="mirlumi_open_mode_summary">Strani s seznama in strani, ki ste jih dovolili, se vedno odprejo. Druge strani se preverijo na tej napravi in blokirajo, če so videti tvegane.</string>
 </resources>

@@ -52,4 +52,12 @@ class AllowlistMessagesTest {
         assertEquals("parentSites", message.getString("type"))
         assertEquals(2, message.getJSONArray("sites").length())
     }
+
+    @Test
+    fun `the open mode setting goes to the extension as a message`() {
+        val message = AllowlistMessages.mode(true)
+        assertEquals("mode", message.getString("type"))
+        assertTrue(message.getBoolean("open"))
+        assertFalse(AllowlistMessages.mode(false).getBoolean("open"))
+    }
 }

@@ -9,4 +9,6 @@
     <string name="mirlumi_allowed_sites_empty">You haven’t allowed any sites yet.</string>
     <string name="mirlumi_allowed_sites_remove">Remove</string>
     <string name="mirlumi_allowed_sites_close">Close</string>
+    <string name="mirlumi_open_mode_title">Open all sites, block risky pages</string>
+    <string name="mirlumi_open_mode_summary">Sites on the list and sites you allowed always open. Other pages are checked on this device and blocked if they look risky.</string>
 </resources>

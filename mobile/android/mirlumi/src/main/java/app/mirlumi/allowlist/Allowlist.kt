@@ -24,7 +24,8 @@ import org.json.JSONObject
 /**
  * Allowlist-only browsing. A built-in extension sends every top-level page that isn't on the bundled list, or on the
  * list a parent added to, to a blocked page; the matcher and the page come from packages/allowlist. From the blocked
- * page a parent can allow the site with the Settings PIN.
+ * page a parent can allow the site with the Settings PIN. In [OpenMode], which a parent can turn on, other pages open
+ * and the extension blocks those the page classifier from packages/page-classifier flags.
  */
 object Allowlist {
     private const val EXTENSION_ID = "allowlist@mirlumi.app"
@@ -33,21 +34,31 @@ object Allowlist {
 
     private val controller = BuiltInWebExtensionController(EXTENSION_ID, EXTENSION_URL, PORT_NAME)
     private var sites: ParentSites? = null
+    private var openMode: OpenMode? = null
     private var port: Port? = null
     private var activity: WeakReference<FragmentActivity>? = null
     private val sendSites: (List<String>) -> Unit = { sites -> port?.postMessage(AllowlistMessages.parentSites(sites)) }
+    private val sendMode: (Boolean) -> Unit = { open -> port?.postMessage(AllowlistMessages.mode(open)) }
 
     /** Whether allowlist-only browsing is on, as passed to [install]. */
     var isEnabled = false
+        @VisibleForTesting internal set
+
+    /** Whether a parent can turn on open mode, as passed to [install]. */
+    var isOpenModeAvailable = false
         @VisibleForTesting internal set
 
     // Set while the extension's background script is connected, which it does only after its request listener is in
     // place. Until then, and if installing it fails, nothing could block a page, so top-level loads are refused.
     @Volatile @VisibleForTesting internal var extensionReady = false
 
-    /** Installs the extension in [runtime], or removes it when [enabled] is false. Call once the engine exists. */
-    fun install(context: Context, runtime: WebExtensionRuntime, enabled: Boolean) {
+    /**
+     * Installs the extension in [runtime], or removes it when [enabled] is false. [openModeAvailable] lets a parent
+     * turn on open mode. Call once the engine exists.
+     */
+    fun install(context: Context, runtime: WebExtensionRuntime, enabled: Boolean, openModeAvailable: Boolean = false) {
         isEnabled = enabled
+        isOpenModeAvailable = openModeAvailable
         if (!enabled) {
             runtime.listInstalledWebExtensions(
                 onSuccess = { installed ->
@@ -57,6 +68,7 @@ object Allowlist {
             return
         }
         parentSites(context).addListener(sendSites)
+        openMode(context).addListener(sendMode)
         controller.registerBackgroundMessageHandler(Messages(context.applicationContext), PORT_NAME)
         controller.install(runtime)
     }
@@ -111,6 +123,10 @@ object Allowlist {
     }
 
     @Synchronized
+    internal fun openMode(context: Context): OpenMode =
+        openMode ?: OpenMode(PreferencesOpenModeStore(context), isOpenModeAvailable).also { openMode = it }
+
+    @Synchronized
     internal fun parentSites(context: Context): ParentSites =
         sites ?: ParentSites(PreferencesSiteStore(context)).also { sites = it }
 
@@ -128,6 +144,8 @@ object Allowlist {
         override fun onPortConnected(port: Port) {
             Allowlist.port = port
             extensionReady = true
+            // The mode first: the extension treats pages as allowlist-only until the parent's sites arrive.
+            port.postMessage(AllowlistMessages.mode(openMode(context).isOpen))
             port.postMessage(AllowlistMessages.parentSites(parentSites(context).sites))
         }
 
@@ -181,6 +199,8 @@ internal object AllowlistMessages {
 
     fun parentSites(sites: List<String>): JSONObject =
         JSONObject().put("type", "parentSites").put("sites", JSONArray(sites))
+
+    fun mode(open: Boolean): JSONObject = JSONObject().put("type", "mode").put("open", open)
 
     fun allowRequest(message: Any): AllowRequest? {
         val json = message as? JSONObject ?: return null

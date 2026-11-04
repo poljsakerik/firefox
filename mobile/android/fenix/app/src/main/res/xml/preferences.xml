@@ -122,6 +122,8 @@
 
         <app.mirlumi.allowlist.AllowedSitesPreference android:key="mirlumi_allowed_sites" />
 
+        <app.mirlumi.allowlist.OpenModePreference android:key="mirlumi_open_mode" />
+
         <androidx.preference.Preference
             android:key="@string/pref_key_private_browsing"
             app:iconSpaceReserved="false"

@@ -8,7 +8,7 @@
   "name": "Mirlumi allowlist",
   "version": "${version}",
   "background": {
-    "scripts": ["generated/allowlist.js", "generated/sites.js", "background.js"]
+    "scripts": ["generated/allowlist.js", "generated/sites.js", "generated/page-classifier.js", "background.js"]
   },
   "permissions": ["webRequest", "webRequestBlocking", "http://*/*", "https://*/*", "nativeMessaging", "geckoViewAddons"],
   "web_accessible_resources": ["generated/blocked.html"]
