@@ -8,6 +8,10 @@
 
 browser.webRequest.onBeforeRequest.addListener(
   details => {
+    // A posted form: its search is in the body, and a redirect would post the same body again.
+    if (MirlumiSafeSearch.refusesLoad(details.url, details.method)) {
+      return { cancel: true };
+    }
     const redirectUrl = MirlumiSafeSearch.safeSearchUrl(details.url);
     return redirectUrl ? { redirectUrl } : {};
   },
