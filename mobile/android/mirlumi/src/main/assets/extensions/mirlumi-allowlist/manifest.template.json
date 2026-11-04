@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "allowlist@mirlumi.app"
+    }
+  },
+  "name": "Mirlumi allowlist",
+  "version": "${version}",
+  "background": {
+    "scripts": ["generated/allowlist.js", "generated/sites.js", "background.js"]
+  },
+  "permissions": ["webRequest", "webRequestBlocking", "http://*/*", "https://*/*", "nativeMessaging", "geckoViewAddons"],
+  "web_accessible_resources": ["generated/blocked.html"]
+}

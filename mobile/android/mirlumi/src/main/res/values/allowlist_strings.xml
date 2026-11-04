@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<resources>
+    <string name="mirlumi_allowed_sites_title">Sites you allowed</string>
+    <string name="mirlumi_allowed_sites_summary">Sites opened with the PIN that aren’t on the list for children</string>
+    <string name="mirlumi_allowed_sites_body">Only sites on the list for children open, and these. To add a site, open it and choose Allow with PIN.</string>
+    <string name="mirlumi_allowed_sites_empty">You haven’t allowed any sites yet.</string>
+    <string name="mirlumi_allowed_sites_remove">Remove</string>
+    <string name="mirlumi_allowed_sites_close">Close</string>
+</resources>

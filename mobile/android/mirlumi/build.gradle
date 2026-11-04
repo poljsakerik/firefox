@@ -38,14 +38,18 @@ mozilla {
     detektConfig = "$projectDir/../android-components/config/detekt.yml"
 }
 
-// A new version on every build, so GeckoView reinstalls the safe search extension and never runs older files.
-tasks.register("updateSafeSearchExtensionVersion", Copy) { task ->
-    updateExtensionVersion(task, 'src/main/assets/extensions/mirlumi-safe-search', rootProject.ext.config.componentsVersion)
+// A new version on every build, so GeckoView reinstalls each built-in extension and never runs older files.
+def extensionVersionTasks = ["SafeSearch": "mirlumi-safe-search", "Allowlist": "mirlumi-allowlist"].collect { name, dir ->
+    def taskName = "update${name}ExtensionVersion"
+    tasks.register(taskName, Copy) { task ->
+        updateExtensionVersion(task, "src/main/assets/extensions/$dir", rootProject.ext.config.componentsVersion)
+    }
+    preBuild.dependsOn taskName
+    taskName
 }
-preBuild.dependsOn "updateSafeSearchExtensionVersion"
-// The lint tasks read the module directory that the manifest is written into.
+// The lint tasks read the module directory that the manifests are written into.
 tasks.matching { it.name.startsWith("spotless") || it.name.startsWith("detekt") }.configureEach {
-    mustRunAfter "updateSafeSearchExtensionVersion"
+    mustRunAfter extensionVersionTasks
 }
 
 dependencies {
@@ -53,8 +57,10 @@ dependencies {
     implementation project(':components:concept-engine')
     implementation project(':components:lib-dataprotect')
     implementation project(':components:support-base')
+    implementation project(':components:support-webextensions')
     implementation project(':components:ui-icons')
 
+    implementation libs.androidx.annotation
     implementation platform(libs.androidx.compose.bom)
     implementation libs.androidx.compose.foundation
     implementation libs.androidx.compose.material3

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<resources>
+    <string name="mirlumi_allowed_sites_title">Strani, ki ste jih dovolili</string>
+    <string name="mirlumi_allowed_sites_summary">Strani zunaj seznama za otroke, odprte s PIN-om</string>
+    <string name="mirlumi_allowed_sites_body">Odprejo se le strani s seznama za otroke in te strani. Če želite dodati stran, jo odprite in izberite Dovoli s PIN-om.</string>
+    <string name="mirlumi_allowed_sites_empty">Dovolili niste še nobene strani.</string>
+    <string name="mirlumi_allowed_sites_remove">Odstrani</string>
+    <string name="mirlumi_allowed_sites_close">Zapri</string>
+</resources>
