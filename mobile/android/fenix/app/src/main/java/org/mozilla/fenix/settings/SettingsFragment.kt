@@ -259,7 +259,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragment 
         // Use nimbus to set the title, and a trivial addition
         val nimbusValidation = FxNimbus.features.nimbusValidation.value()
 
-        val title = nimbusValidation.settingsTitle
+        val title = getString(app.mirlumi.R.string.mirlumi_browser_settings_title)
         val suffix = nimbusValidation.settingsPunctuation
         val toolbarTitle = "$title$suffix"
 

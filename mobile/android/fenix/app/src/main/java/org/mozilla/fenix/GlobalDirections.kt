@@ -26,7 +26,7 @@ enum class GlobalDirections(val navDirections: NavDirections, val destinationId:
     ),
     Settings(
         NavGraphDirections.actionGlobalSettingsFragment(),
-        R.id.settingsFragment,
+        R.id.mirlumi_settings,
     ),
     Sync(
         NavGraphDirections.actionGlobalTurnOnSync(entrypoint = FenixFxAEntryPoint.DeepLink),

@@ -7,6 +7,7 @@ package app.mirlumi.settingslock
 import android.content.Context
 import android.os.Bundle
 import android.os.StrictMode
+import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -27,11 +28,14 @@ import mozilla.components.lib.dataprotect.SecureAbove22Preferences
 object SettingsLock {
     private const val UNLOCK_RESULT = "app.mirlumi.settingslock.unlock"
 
-    private var enabled = false
     private var unlocked = false
     private var pendingAuthorization: Pair<() -> Unit, () -> Unit>? = null
     private var pin: SettingsPin? = null
     private val guards = mutableMapOf<FragmentActivity, Guard>()
+
+    /** Whether Settings are behind the PIN, as passed to [install]. */
+    var isEnabled = false
+        @VisibleForTesting internal set
 
     /**
      * Watches [navController] for locked screens and asks for the PIN, or for a first PIN once [isOnboarded]. Call from
@@ -43,7 +47,7 @@ object SettingsLock {
         enabled: Boolean,
         isOnboarded: () -> Boolean,
     ) {
-        this.enabled = enabled
+        isEnabled = enabled
         if (!enabled) return
         val context = activity.applicationContext
         thread(name = "mirlumi-settings-lock") { pin(context).isSet }
@@ -62,7 +66,7 @@ object SettingsLock {
      * instead if the PIN screen closes without it, or another request replaces this one.
      */
     fun authorize(fragmentManager: FragmentManager, onDenied: () -> Unit = {}, action: () -> Unit) {
-        if (!enabled || unlocked) {
+        if (!isEnabled || unlocked) {
             action()
             return
         }

@@ -100,7 +100,7 @@
         app:destination="@id/addonInternalSettingsFragment" />
     <action
         android:id="@+id/action_global_settingsFragment"
-        app:destination="@id/settingsFragment" />
+        app:destination="@id/mirlumi_settings" />
     <action
         android:id="@+id/action_global_appIconSelectionFragment"
         app:destination="@id/appIconSelectionFragment" />
@@ -571,6 +571,19 @@
             app:destination="@id/savedLogins"
             app:popUpTo="@id/savedLoginsFragment"
             app:popUpToInclusive="true"/>
+
+    <fragment
+        android:id="@+id/mirlumi_settings"
+        android:name="org.mozilla.fenix.settings.MirlumiSettingsHostFragment"
+        android:label="@string/settings_title">
+        <action
+            android:id="@+id/mirlumi_action_browser_settings"
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
 
     <fragment
         android:id="@+id/settingsFragment"

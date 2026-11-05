@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<resources>
+    <!-- The navigation graph's destination for MirlumiSettingsFragment, and its action to the browser's settings. -->
+    <item name="mirlumi_settings" type="id" />
+    <item name="mirlumi_action_browser_settings" type="id" />
+</resources>

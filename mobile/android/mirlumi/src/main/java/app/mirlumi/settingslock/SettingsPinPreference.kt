@@ -17,6 +17,7 @@ class SettingsPinPreference(context: Context, attrs: AttributeSet?) : Preference
         setTitle(R.string.mirlumi_pin_preference_title)
         setSummary(R.string.mirlumi_pin_preference_summary)
         isIconSpaceReserved = false
+        isVisible = SettingsLock.isEnabled
     }
 
     override fun onClick() {

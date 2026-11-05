@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.preference.PreferenceCategory
+        android:key="mirlumi_browsing_category"
+        android:title="@string/mirlumi_settings_browsing"
+        app:iconSpaceReserved="false">
+
+        <app.mirlumi.allowlist.AllowedSitesPreference android:key="mirlumi_allowed_sites" />
+
+        <app.mirlumi.allowlist.OpenModePreference android:key="mirlumi_open_mode" />
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        android:key="mirlumi_pin_category"
+        android:title="@string/mirlumi_settings_pin"
+        app:iconSpaceReserved="false">
+
+        <app.mirlumi.settingslock.SettingsPinPreference android:key="mirlumi_settings_pin" />
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.Preference
+        android:key="mirlumi_browser_settings"
+        android:summary="@string/mirlumi_browser_settings_summary"
+        android:title="@string/mirlumi_browser_settings_title"
+        app:allowDividerAbove="true"
+        app:iconSpaceReserved="false" />
+</androidx.preference.PreferenceScreen>

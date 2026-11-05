@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<resources>
+    <string name="mirlumi_settings_title">Nastavitve</string>
+    <string name="mirlumi_settings_browsing">Brskanje</string>
+    <string name="mirlumi_settings_pin">PIN za nastavitve</string>
+    <string name="mirlumi_browser_settings_title">Nastavitve brskalnika</string>
+    <string name="mirlumi_browser_settings_summary">Iskanje, zasebnost, zavihki, videz in drugo</string>
+</resources>
