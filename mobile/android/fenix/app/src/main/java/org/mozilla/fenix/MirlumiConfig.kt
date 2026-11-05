@@ -20,6 +20,12 @@ object MirlumiConfig {
     /** Statements such as "You're protected", which must not imply child safety in this baseline. */
     val protectionClaimsEnabled: Boolean = false
 
+    /**
+     * Settings opens on Mirlumi's own settings, with the browser's settings one row below:
+     * [app.mirlumi.settings.MirlumiSettings]. Off, Mirlumi's rows are in the browser's settings, under Privacy.
+     */
+    val settingsScreenEnabled: Boolean = true
+
     /** A parent's PIN in front of Settings and everything else that changes the browser: [app.mirlumi.settingslock]. */
     val settingsLockEnabled: Boolean = true
 

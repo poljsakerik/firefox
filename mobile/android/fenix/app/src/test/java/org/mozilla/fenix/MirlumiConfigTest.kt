@@ -39,6 +39,11 @@ class MirlumiConfigTest {
     }
 
     @Test
+    fun `settings open on Mirlumi's own settings`() {
+        assertTrue(MirlumiConfig.settingsScreenEnabled)
+    }
+
+    @Test
     fun `DuckDuckGo searches use strict safe search`() {
         assertTrue(MirlumiConfig.safeSearchEnabled)
     }

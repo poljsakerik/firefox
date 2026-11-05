@@ -33,6 +33,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.recyclerview.widget.RecyclerView
+import app.mirlumi.settings.MirlumiSettings
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.lang.ref.WeakReference
 import kotlin.system.exitProcess
@@ -259,7 +260,11 @@ class SettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragment 
         // Use nimbus to set the title, and a trivial addition
         val nimbusValidation = FxNimbus.features.nimbusValidation.value()
 
-        val title = getString(app.mirlumi.R.string.mirlumi_browser_settings_title)
+        val title = if (MirlumiConfig.settingsScreenEnabled) {
+            getString(app.mirlumi.R.string.mirlumi_browser_settings_title)
+        } else {
+            nimbusValidation.settingsTitle
+        }
         val suffix = nimbusValidation.settingsPunctuation
         val toolbarTitle = "$title$suffix"
 
@@ -689,6 +694,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragment 
         requirePreference<Preference>(R.string.pref_key_remote_improvements).isVisible = false
         findPreference<Preference>(getPreferenceKey(R.string.pref_key_nimbus_experiments))?.isVisible = false
         findPreference<Preference>(getPreferenceKey(R.string.pref_key_sync_debug))?.isVisible = false
+        MirlumiSettings.hideMovedRows(preferenceScreen)
     }
 
     private fun setupAutofillPreferences(settings: Settings) {

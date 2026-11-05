@@ -5,6 +5,11 @@
 package app.mirlumi.settings
 
 import android.content.Context
+import androidx.navigation.NavAction
+import androidx.navigation.NavGraph
+import androidx.navigation.NavGraphNavigator
+import androidx.navigation.NavOptions
+import androidx.navigation.NavigatorProvider
 import androidx.preference.Preference
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
@@ -16,6 +21,7 @@ import app.mirlumi.settingslock.SettingsLock
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,6 +37,7 @@ class MirlumiSettingsTest {
         Allowlist.isEnabled = false
         Allowlist.isOpenModeAvailable = false
         SettingsLock.isEnabled = false
+        MirlumiSettings.isEnabled = false
     }
 
     private fun screen(): PreferenceScreen =
@@ -74,10 +81,46 @@ class MirlumiSettingsTest {
     }
 
     @Test
+    fun `the app's action to Settings is pointed at Mirlumi's screen, keeping its options`() {
+        val graph = NavGraph(NavGraphNavigator(NavigatorProvider()))
+        val options = NavOptions.Builder().setLaunchSingleTop(true).build()
+        graph.putAction(SETTINGS_ACTION, NavAction(BROWSER_SETTINGS, options))
+        MirlumiSettings.route(graph, SETTINGS_ACTION, MIRLUMI_SCREEN)
+        assertEquals(MIRLUMI_SCREEN, graph.getAction(SETTINGS_ACTION)!!.destinationId)
+        assertEquals(options, graph.getAction(SETTINGS_ACTION)!!.navOptions)
+    }
+
+    @Test
+    fun `a graph without the action is left as it is`() {
+        val graph = NavGraph(NavGraphNavigator(NavigatorProvider()))
+        MirlumiSettings.route(graph, SETTINGS_ACTION, MIRLUMI_SCREEN)
+        assertNull(graph.getAction(SETTINGS_ACTION))
+    }
+
+    @Test
+    fun `Mirlumi's rows leave the browser's settings only while its screen is on`() {
+        Allowlist.isEnabled = true
+        SettingsLock.isEnabled = true
+        val browserSettings = screen()
+        MirlumiSettings.hideMovedRows(browserSettings)
+        assertTrue(browserSettings.isShown("mirlumi_allowed_sites"))
+        assertTrue(browserSettings.isShown("mirlumi_settings_pin"))
+        MirlumiSettings.isEnabled = true
+        MirlumiSettings.hideMovedRows(browserSettings)
+        MirlumiSettings.rowKeys.forEach { assertFalse(browserSettings.isShown(it)) }
+    }
+
+    @Test
     @Config(qualifiers = "sl")
     fun `Slovenian names the sections and the browser's settings`() {
         assertEquals("Nastavitve", context.getString(R.string.mirlumi_settings_title))
         assertEquals("Brskanje", context.getString(R.string.mirlumi_settings_browsing))
         assertEquals("Nastavitve brskalnika", context.getString(R.string.mirlumi_browser_settings_title))
+    }
+
+    private companion object {
+        const val SETTINGS_ACTION = 1
+        const val BROWSER_SETTINGS = 2
+        const val MIRLUMI_SCREEN = 3
     }
 }

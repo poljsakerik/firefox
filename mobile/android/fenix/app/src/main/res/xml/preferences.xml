@@ -118,6 +118,12 @@
         android:key="@string/pref_key_privacy_security_category"
         android:layout="@layout/preference_category_no_icon_style">
 
+        <app.mirlumi.settingslock.SettingsPinPreference android:key="mirlumi_settings_pin" />
+
+        <app.mirlumi.allowlist.AllowedSitesPreference android:key="mirlumi_allowed_sites" />
+
+        <app.mirlumi.allowlist.OpenModePreference android:key="mirlumi_open_mode" />
+
         <androidx.preference.Preference
             android:key="@string/pref_key_private_browsing"
             app:iconSpaceReserved="false"

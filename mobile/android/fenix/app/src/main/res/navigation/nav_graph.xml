@@ -100,7 +100,7 @@
         app:destination="@id/addonInternalSettingsFragment" />
     <action
         android:id="@+id/action_global_settingsFragment"
-        app:destination="@id/mirlumi_settings" />
+        app:destination="@id/settingsFragment" />
     <action
         android:id="@+id/action_global_appIconSelectionFragment"
         app:destination="@id/appIconSelectionFragment" />

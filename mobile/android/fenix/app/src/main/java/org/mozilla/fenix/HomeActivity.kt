@@ -46,6 +46,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import app.mirlumi.allowlist.Allowlist
+import app.mirlumi.settings.MirlumiSettings
 import app.mirlumi.settingslock.SettingsLock
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers.IO
@@ -687,6 +688,12 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, Crash
             components.fenixOnboarding.userHasBeenOnboarded()
         }
         Allowlist.attach(this)
+        MirlumiSettings.install(
+            navHost.navController,
+            MirlumiConfig.settingsScreenEnabled,
+            settingsAction = R.id.action_global_settingsFragment,
+            screen = R.id.mirlumi_settings,
+        )
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(
             StatusBarColorManager(
