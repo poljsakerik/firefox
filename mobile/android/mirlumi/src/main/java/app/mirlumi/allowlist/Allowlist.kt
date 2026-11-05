@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import app.mirlumi.settingslock.SettingsLock
 import java.lang.ref.WeakReference
+import java.util.WeakHashMap
 import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.request.RequestInterceptor
 import mozilla.components.concept.engine.webextension.MessageHandler
@@ -40,7 +41,9 @@ object Allowlist {
     private var activity: WeakReference<FragmentActivity>? = null
     private val sendSites: (List<String>) -> Unit = { sites -> port?.postMessage(AllowlistMessages.parentSites(sites)) }
     private val sendMode: (Boolean) -> Unit = { open -> port?.postMessage(AllowlistMessages.mode(open)) }
-    @VisibleForTesting internal val pendingLoads = PendingLoads<EngineSession>()
+    // The last page each session was refused while the extension started, held weakly. Main thread only, as GeckoView
+    // calls the interceptor and the port there.
+    private val pendingLoads = WeakHashMap<EngineSession, String>()
     @VisibleForTesting internal var isLive: (EngineSession) -> Boolean = { false }
 
     /** Whether allowlist-only browsing is on, as passed to [install]. */
@@ -96,9 +99,9 @@ object Allowlist {
         isSubframeRequest: Boolean,
     ): RequestInterceptor.InterceptionResponse? {
         if (!isEnabled || isSubframeRequest) return null
-        pendingLoads.forget(session)
+        pendingLoads.remove(session)
         val response = refusal(uri)
-        if (response != null && !extensionReady && !isRestricted(uri)) pendingLoads.remember(session, uri)
+        if (response != null && !extensionReady && !isRestricted(uri)) pendingLoads[session] = uri
         return response
     }
 
@@ -151,7 +154,9 @@ object Allowlist {
 
     @VisibleForTesting
     internal fun resumePendingLoads() {
-        pendingLoads.resume(isLive) { session, url -> session.loadUrl(url) }
+        val pending = pendingLoads.toMap()
+        pendingLoads.clear()
+        pending.forEach { (session, url) -> if (isLive(session)) session.loadUrl(url) }
     }
 
     @Synchronized

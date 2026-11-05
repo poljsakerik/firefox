@@ -67,7 +67,6 @@ class AllowlistInterceptTest {
         connect()
         assertEquals("only the latest page, once", listOf("https://example.com/latest"), loadedUrls(session))
         assertEquals(listOf("https://pbskids.org/"), loadedUrls(other))
-        assertTrue(Allowlist.pendingLoads.isEmpty)
 
         assertNull(
             "the extension judges the retry",
