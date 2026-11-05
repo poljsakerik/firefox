@@ -10,7 +10,7 @@
 
 "use strict";
 
-/* global MirlumiBlockedStrings */
+/* global MirlumiAllowlist, MirlumiBlockedStrings */
 
 (function () {
   const ALLOW_URL = "internal://local/mirlumi/allow";
@@ -50,6 +50,9 @@
     shown.body = (isSearch ? text.searchBody : text.flaggedBody).replace("{category}", category);
     shown.parent = text.flaggedParent;
   }
+  // Only a site's name can go on the list. For any other address, such as an IP address, the PIN would allow nothing.
+  const allowable = MirlumiAllowlist.entryForHost(host) !== null;
+  if (!allowable) shown.parent = text.cannotAllow;
   document.title = shown.title;
   for (const id of ["title", "body", "parent", "failed", "allow", "back", "retry"]) {
     element(id).textContent = shown[id];
@@ -79,7 +82,7 @@
   const allow = element("allow");
   const failed = element("failed");
   // Another site could frame this page to make a parent allow an address of its choosing.
-  allow.hidden = window.top !== window || isSearch;
+  allow.hidden = !allowable || window.top !== window || isSearch;
   allow.addEventListener("click", async () => {
     failed.hidden = true;
     if (!extension) {
