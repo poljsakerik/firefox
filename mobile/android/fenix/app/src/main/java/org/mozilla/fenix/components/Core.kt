@@ -277,7 +277,9 @@ class Core(
                     it,
                     MirlumiConfig.allowlistEnabled,
                     openModeAvailable = MirlumiConfig.pageClassifierEnabled,
-                )
+                ) { session ->
+                    store.state.findTabOrCustomTab(session) != null
+                }
                 ContentRules.install(it, MirlumiConfig.contentRulesEnabled)
                 ImageCheck.install(context, it, MirlumiConfig.imageCheckEnabled)
             }

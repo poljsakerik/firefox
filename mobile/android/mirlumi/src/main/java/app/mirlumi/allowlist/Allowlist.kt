@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import app.mirlumi.settingslock.SettingsLock
 import java.lang.ref.WeakReference
+import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.request.RequestInterceptor
 import mozilla.components.concept.engine.webextension.MessageHandler
 import mozilla.components.concept.engine.webextension.Port
@@ -39,6 +40,8 @@ object Allowlist {
     private var activity: WeakReference<FragmentActivity>? = null
     private val sendSites: (List<String>) -> Unit = { sites -> port?.postMessage(AllowlistMessages.parentSites(sites)) }
     private val sendMode: (Boolean) -> Unit = { open -> port?.postMessage(AllowlistMessages.mode(open)) }
+    @VisibleForTesting internal val pendingLoads = PendingLoads<EngineSession>()
+    @VisibleForTesting internal var isLive: (EngineSession) -> Boolean = { false }
 
     /** Whether allowlist-only browsing is on, as passed to [install]. */
     var isEnabled = false
@@ -54,11 +57,19 @@ object Allowlist {
 
     /**
      * Installs the extension in [runtime], or removes it when [enabled] is false. [openModeAvailable] lets a parent
-     * turn on open mode. Call once the engine exists.
+     * turn on open mode. Call once the engine exists. Pages refused while the extension starts are loaded again once
+     * it's ready, in the sessions that [isLive] still.
      */
-    fun install(context: Context, runtime: WebExtensionRuntime, enabled: Boolean, openModeAvailable: Boolean = false) {
+    fun install(
+        context: Context,
+        runtime: WebExtensionRuntime,
+        enabled: Boolean,
+        openModeAvailable: Boolean = false,
+        isLive: (EngineSession) -> Boolean,
+    ) {
         isEnabled = enabled
         isOpenModeAvailable = openModeAvailable
+        this.isLive = isLive
         if (!enabled) {
             runtime.listInstalledWebExtensions(
                 onSuccess = { installed ->
@@ -75,10 +86,27 @@ object Allowlist {
 
     /**
      * Refuses a top-level load the extension can't judge: any web page before the extension is ready, and the hosts
-     * Gecko hides from extensions. Call first from the engine's request interceptor; null lets the load go on.
+     * Gecko hides from extensions. A page refused only because the extension isn't ready is loaded again in [session]
+     * once it is, unless [session] loads something else first. Call first from the engine's request interceptor; null
+     * lets the load go on.
      */
-    fun interceptLoad(uri: String, isSubframeRequest: Boolean): RequestInterceptor.InterceptionResponse? {
+    fun interceptLoad(
+        session: EngineSession,
+        uri: String,
+        isSubframeRequest: Boolean,
+    ): RequestInterceptor.InterceptionResponse? {
         if (!isEnabled || isSubframeRequest) return null
+        pendingLoads.forget(session)
+        val response = refusal(uri)
+        if (response != null && !extensionReady && !isRestricted(uri)) pendingLoads.remember(session, uri)
+        return response
+    }
+
+    private fun isRestricted(uri: String): Boolean =
+        GeckoRestrictedHosts.contains(Uri.parse(uri).host?.lowercase()?.removeSuffix("."))
+
+    private fun refusal(uri: String): RequestInterceptor.InterceptionResponse? {
+        if (!isEnabled) return null
         val parsed = Uri.parse(uri)
         val scheme = parsed.scheme?.lowercase()
         if (scheme != "http" && scheme != "https") return null
@@ -97,11 +125,10 @@ object Allowlist {
      */
     fun checkReplacement(response: RequestInterceptor.InterceptionResponse?): RequestInterceptor.InterceptionResponse? =
         when (response) {
-            is RequestInterceptor.InterceptionResponse.Url ->
-                interceptLoad(response.url, isSubframeRequest = false) ?: response
+            is RequestInterceptor.InterceptionResponse.Url -> refusal(response.url) ?: response
             is RequestInterceptor.InterceptionResponse.AppIntent -> {
                 val fallback = response.fallbackUrl
-                val refused = fallback != null && interceptLoad(fallback, isSubframeRequest = false) != null
+                val refused = fallback != null && refusal(fallback) != null
                 if (refused) response.copy(fallbackUrl = null) else response
             }
             else -> response
@@ -120,6 +147,11 @@ object Allowlist {
                 }
             }
         )
+    }
+
+    @VisibleForTesting
+    internal fun resumePendingLoads() {
+        pendingLoads.resume(isLive) { session, url -> session.loadUrl(url) }
     }
 
     @Synchronized
@@ -147,6 +179,7 @@ object Allowlist {
             // The mode first: the extension treats pages as allowlist-only until the parent's sites arrive.
             port.postMessage(AllowlistMessages.mode(openMode(context).isOpen))
             port.postMessage(AllowlistMessages.parentSites(parentSites(context).sites))
+            resumePendingLoads()
         }
 
         override fun onPortDisconnected(port: Port) {

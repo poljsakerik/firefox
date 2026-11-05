@@ -106,6 +106,7 @@ dependencies {
     implementation "com.microsoft.onnxruntime:onnxruntime-android:1.24.2"
 
     testImplementation libs.junit4
+    testImplementation libs.mockito
     testImplementation libs.androidx.test.core
     testImplementation libs.androidx.test.junit
     testImplementation libs.robolectric

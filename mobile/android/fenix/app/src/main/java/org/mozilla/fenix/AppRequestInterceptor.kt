@@ -51,7 +51,7 @@ class AppRequestInterceptor(
         isDirectNavigation: Boolean,
         isSubframeRequest: Boolean,
     ): RequestInterceptor.InterceptionResponse? {
-        Allowlist.interceptLoad(uri, isSubframeRequest)?.let {
+        Allowlist.interceptLoad(engineSession, uri, isSubframeRequest)?.let {
             return it
         }
         ImageCheck.interceptLoad(uri, isSubframeRequest)?.let {
