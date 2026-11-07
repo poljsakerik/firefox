@@ -8,10 +8,11 @@
 // In open mode, which a parent turns on in Settings, pages that aren't allowed open instead, and the page classifier
 // from packages/page-classifier checks them: page-check.js keeps each such page hidden until its text is cleared, and
 // checks it again when it changes without loading. A page it flags, or can't check in time, goes to the blocked page
-// with the reason. DuckDuckGo searches it flags are blocked before they load. A site flagged once is blocked for the
-// rest of the session, unless a parent allows it. Frames are checked like pages, each on its own: a frame of a flagged
-// site gets the blocked page in its place, and a frame without an address of its own, such as srcdoc, is judged with
-// the page that holds it.
+// with the reason. DuckDuckGo and Wikipedia searches it flags are blocked before they load, and a search a page writes
+// into its address is judged with the page. A flagged page is blocked for the rest of the session, and so is its whole
+// site once its home page or three of its pages are flagged (MirlumiAllowlist.createFlags), unless a parent allows it.
+// Frames are checked like pages, each on its own: a flagged frame gets the blocked page in its place, and a frame
+// without an address of its own, such as srcdoc, is judged with the page that holds it.
 
 "use strict";
 
@@ -37,11 +38,11 @@ let pageCheckScript = null;
 // The attribute that shows a checked page, named afresh at every start so a page can't know it in advance.
 const SHOWN_ATTRIBUTE = `data-mirlumi-${crypto.randomUUID().replace(/-/g, "")}`;
 // The document being checked in each tab, with its latest revision; tabs whose check failed, with the address; the
-// open pages' ports; and flagged sites, by the entry an approval would add.
+// open pages' ports; and the pages and sites flagged this session.
 const documents = new Map();
 const uncheckedFrames = new Map();
 const pagePorts = new Set();
-const flaggedSites = new Map();
+const flags = MirlumiAllowlist.createFlags();
 
 let markParentSitesLoaded;
 const parentSitesLoaded = new Promise((resolve) => {
@@ -142,24 +143,13 @@ function forgetTab(tabId) {
   }
 }
 
-function siteEntry(url) {
-  const target = MirlumiAllowlist.hostAndPath(url);
-  return target && MirlumiAllowlist.entryForHost(target.host);
-}
-
-// The label a site was flagged with this session, looking at the host and every domain above it, as approvals match.
+// The label the page at url, or its site, was flagged with this session, or null.
 function flaggedLabel(url) {
-  const entry = siteEntry(url);
-  if (!entry) return null;
-  const labels = entry.split(".");
-  for (let i = 0; i < labels.length - 1; i++) {
-    const label = flaggedSites.get(labels.slice(i).join("."));
-    if (label) return label;
-  }
-  return null;
+  const target = MirlumiAllowlist.hostAndPath(url);
+  return target && flags.label(target.host, target.path, target.query);
 }
 
-// In open mode: the blocked page for a flagged search or a site flagged earlier, or null to let the load go on.
+// In open mode: the blocked page for a flagged search or a page or site flagged earlier, or null to let the load go on.
 async function openModeBlock(url) {
   const query = MirlumiPageClassifier.searchQuery(url);
   if (query !== null) {
@@ -234,12 +224,21 @@ async function startPage(token, sender) {
 }
 
 // Checks what page-check.js read, for the tab's document under check, at a revision newer than any before. The answer
-// names the revision it clears. A flagged page's site is remembered, and page-check.js loads the page again, which the
+// names the revision it clears. A flagged page is remembered, and page-check.js loads the page again, which the
 // request listener sends to the blocked page: GeckoView only lets an extension change a tab through the app, which
 // built-in extensions don't get, and a page can't open an extension page itself.
+// The address a check judges: the one the page shows now, which a single page app can change without loading, on the
+// host it loaded from, since it can't change that.
+function checkedUrl(message, sender) {
+  const url = pageUrl(sender);
+  const loaded = MirlumiAllowlist.hostAndPath(url);
+  const shown = MirlumiAllowlist.hostAndPath(message.address);
+  return loaded && shown && loaded.host === shown.host ? message.address : url;
+}
+
 async function checkPage(message, sender) {
   const key = senderKey(sender);
-  const url = pageUrl(sender);
+  const url = checkedUrl(message, sender);
   const current = documents.get(key);
   if (!openMode || !current || current.token !== message.document) return { failed: true };
   if (!Number.isInteger(message.revision) || message.revision <= current.revision) return { stale: true };
@@ -252,19 +251,19 @@ async function checkPage(message, sender) {
     headings: Array.isArray(page?.headings) ? page.headings.slice(0, 30).map((h) => text(h, 300)) : [],
     body: text(page?.body, 8000),
   };
-  const { flagged } = MirlumiPageClassifier.checkPage(await loadModel(), fields);
+  const { flagged } = MirlumiPageClassifier.checkPageAt(await loadModel(), fields, url);
   if (documents.get(key) !== current || current.revision !== message.revision) return { stale: true };
-  // Another page may have flagged the site while this one was checked.
+  // Another page may have flagged this one, or its site, while it was checked.
   if (!flagged) return flaggedLabel(url) ? { blocked: true } : { clear: message.revision };
-  const entry = siteEntry(url);
-  if (!entry) return { failed: true };
-  flaggedSites.set(entry, flagged);
+  const target = MirlumiAllowlist.hostAndPath(url);
+  if (!target || !flags.flag(target.host, target.path, target.query, flagged)) return { failed: true };
   documents.delete(key);
   revokeFlaggedPages();
   return { blocked: true };
 }
 
-// Open pages of a site flagged since they were cleared load again, and the request listener blocks them.
+// Open pages flagged since they were cleared, or of a site flagged since, load again, and the request listener blocks
+// them.
 function revokeFlaggedPages() {
   for (const pagePort of pagePorts) {
     if (flaggedLabel(pageUrl(pagePort.sender))) {

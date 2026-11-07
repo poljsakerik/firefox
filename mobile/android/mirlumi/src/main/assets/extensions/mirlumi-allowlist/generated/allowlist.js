@@ -4,8 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Decides which addresses open in allowlist-only mode. A classic script, so the same file runs in Android's built-in
-// extension, in JavaScriptCore on iOS, and in Node's tests. It defines globalThis.MirlumiAllowlist.
+// Decides which addresses open in allowlist-only mode, and keeps what open mode's page check flagged. A classic script,
+// so the same file runs in Android's built-in extension, in JavaScriptCore on iOS, and in Node's tests. It defines
+// globalThis.MirlumiAllowlist.
 
 "use strict";
 
@@ -64,7 +65,7 @@
     return normalizeHost(bare) ? bare : name;
   }
 
-  /** The host and path of an http or https address, using URL where the platform has it. */
+  /** The host, path and query (without "?") of an http or https address, using URL where the platform has it. */
   function hostAndPath(url) {
     if (typeof URL !== "function") return null;
     let parsed;
@@ -74,7 +75,68 @@
       return null;
     }
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
-    return { host: parsed.hostname, path: parsed.pathname };
+    return { host: parsed.hostname, path: parsed.pathname, query: parsed.search.slice(1) };
+  }
+
+  /** How many different paths of one site have to be flagged in a session for the whole site to be. */
+  const FLAGGED_PATHS_FOR_SITE = 3;
+
+  /**
+   * What open mode's page check flagged this session. A flagged page is blocked at its host without a leading
+   * "www.", path and query, so one page of an encyclopedia or a forum doesn't block the rest of it. Its site, the entry
+   * a parent would allow, with its subdomains, is flagged as a whole once its home page is, or FLAGGED_PATHS_FOR_SITE
+   * of its paths are. Hosts that can't be entries, such as IP addresses, can't be flagged.
+   */
+  function createFlags() {
+    const sites = new Map();
+    const pages = new Map();
+    const paths = new Map();
+    const pageKey = (entry, path, query) => `${entry}${path || "/"}${query ? `?${query}` : ""}`;
+    const covers = (entry, host) => host === entry || host.endsWith(`.${entry}`);
+
+    return {
+      /** Flags the page at host, path and query for label. Returns "page", or "site" once its site is, or null. */
+      flag(host, path, query, label) {
+        const entry = entryForHost(host);
+        if (!entry) return null;
+        const cleanPath = path || "/";
+        pages.set(pageKey(entry, cleanPath, query), label);
+        if (!paths.has(entry)) paths.set(entry, new Set());
+        const flaggedPaths = paths.get(entry);
+        flaggedPaths.add(cleanPath);
+        if ((cleanPath === "/" && !query) || flaggedPaths.size >= FLAGGED_PATHS_FOR_SITE) {
+          sites.set(entry, label);
+          return "site";
+        }
+        return "page";
+      },
+
+      /** The label the page at host, path and query, or its site or a domain above it, was flagged for, or null. */
+      label(host, path, query) {
+        const entry = entryForHost(host);
+        if (!entry) return null;
+        const page = pages.get(pageKey(entry, path, query));
+        if (page) return page;
+        const labels = entry.split(".");
+        for (let i = 0; i < labels.length - 1; i++) {
+          const site = sites.get(labels.slice(i).join("."));
+          if (site) return site;
+        }
+        return null;
+      },
+
+      /** Drops every flag on entry and its subdomains, as a parent allowing the site does. */
+      forget(entry) {
+        for (const map of [sites, paths]) {
+          for (const key of [...map.keys()]) if (covers(entry, key)) map.delete(key);
+        }
+        for (const key of [...pages.keys()]) if (covers(entry, key.slice(0, key.indexOf("/")))) pages.delete(key);
+      },
+
+      isEmpty() {
+        return pages.size === 0;
+      },
+    };
   }
 
   /** A matcher over every entry in lists, an array of arrays of entries. Invalid entries are skipped. */
@@ -115,5 +177,5 @@
     };
   }
 
-  root.MirlumiAllowlist = Object.freeze({ create, entryForHost, hostAndPath, normalizeHost, parseEntry });
+  root.MirlumiAllowlist = Object.freeze({ create, createFlags, entryForHost, hostAndPath, normalizeHost, parseEntry });
 })(globalThis);

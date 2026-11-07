@@ -12,9 +12,11 @@ var MirlumiPageText = (function () {
   // outside the page, where the page can't reach it.
   //
   // A page can change without loading: a single-page app moves to another address with script, or fills an empty shell
-  // after it loads. pageState and changedEnough tell when the page has changed enough to be hidden and checked again. A
-  // different address or title always counts; so does a body whose length or text moved by more than small updates such
-  // as a ticking clock or a counter would.
+  // after it loads. pageState and changedEnough tell when the page has changed enough to be checked again. A different
+  // address or title always counts; so does a body whose length or text moved by more than small updates such as a
+  // ticking clock or a counter would. changeKind tells whether such a change needs the page hidden while it's checked:
+  // only when most of its text is new, as when an app shows another page. A changed address alone, as when a search box
+  // writes what's typed into the address, or a smaller change of text, is checked while the page stays in view.
 
   const MAX_BODY_CHARS = 8000;
 
@@ -93,6 +95,35 @@ var MirlumiPageText = (function () {
     return changed >= CHANGED_CHUNKS;
   }
 
+  // The share of a changed page's distinct words that have to be new for the page to count as replaced. Another article
+  // shares common words with the last one; a list of suggestions added to a page brings only a few percent.
+  const REPLACED_WORDS = 0.4;
+
+  // For this long after the reader types into the page, a change that would hide it is checked in view instead: what
+  // changes as someone types is suggestions and results for it, and hiding the page would get in the way of typing.
+  const TYPING_MS = 1000;
+
+  // How a page that was checked in state `before` changed by state `after`: "hide" when it has to be hidden until it's
+  // checked again (it was never checked, or most of its words are new), "check" when it's checked again while it stays in
+  // view, and "none" when it hardly changed.
+  function changeKind(before, after) {
+    if (!before) {
+      return "hide";
+    }
+    if (after.words.size >= NEW_WORDS) {
+      let newWords = 0;
+      for (const word of after.words) {
+        if (!before.words.has(word)) {
+          newWords++;
+        }
+      }
+      if (newWords >= REPLACED_WORDS * after.words.size) {
+        return "hide";
+      }
+    }
+    return changedEnough(before, after) ? "check" : "none";
+  }
+
   // How much text a batch of DOM mutations added, removed or changed, for deciding inside a MutationObserver callback, before
   // anything is painted, whether to hide the page while it's checked again.
   function textAdded(records) {
@@ -124,5 +155,5 @@ var MirlumiPageText = (function () {
     return length;
   }
 
-  return { MAX_BODY_CHARS, readPage, CHUNK_CHARS, CHANGED_CHUNKS, MIN_LENGTH_CHANGE, NEW_WORDS, pageState, changedEnough, textAdded, attributeText };
+  return { MAX_BODY_CHARS, readPage, CHUNK_CHARS, CHANGED_CHUNKS, MIN_LENGTH_CHANGE, NEW_WORDS, pageState, changedEnough, REPLACED_WORDS, TYPING_MS, changeKind, textAdded, attributeText };
 })();

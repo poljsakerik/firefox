@@ -316,7 +316,8 @@ var MirlumiPageClassifier = (function () {
     return { flagged: flaggedLabel(model, scores, true), label, scores };
   }
 
-  const SEARCH_ADDRESS = /^https?:\/\/([^/?#]*)([^?#]*)\?([^#]*)/i;
+  const SEARCH_ADDRESS = /^https?:\/\/([^/?#]*)([^?#]*)(?:\?([^#]*))?/i;
+  const WIKIPEDIA_SEARCH_PATH = /^\/wiki\/Special:Search\/([^/]+)$/i;
 
   function decodeQueryPart(part) {
     try {
@@ -326,26 +327,57 @@ var MirlumiPageClassifier = (function () {
     }
   }
 
-  // The search in a DuckDuckGo results address, the only engine Mirlumi offers, or null for any other address. Covers
-  // duckduckgo.com and its subdomains, including the safe, html and lite hosts.
+  // The last value of parameter `name` in `query`, which is what both sites read, or null. `separators` splits the
+  // parameters: DuckDuckGo splits on ";" as well as "&".
+  function lastParameter(query, name, separators) {
+    let value = null;
+    for (const pair of query.split(separators)) {
+      const equals = pair.indexOf("=");
+      if (equals > 0 && pair.slice(0, equals) === name) {
+        value = pair.slice(equals + 1);
+      }
+    }
+    return value;
+  }
+
+  const cleanQuery = (value) => (value === null ? null : decodeQueryPart(value).trim() || null);
+
+  // The search in a results address, or null for any other address: DuckDuckGo's, the only engine Mirlumi offers, on
+  // duckduckgo.com and its subdomains, including the safe, html and lite hosts; and Wikipedia's own search, on any of its
+  // language and mobile hosts, as a `search` parameter or a Special:Search/<terms> path.
   function searchQuery(address) {
     const match = SEARCH_ADDRESS.exec(String(address));
     if (!match) {
       return null;
     }
     const host = match[1].slice(match[1].lastIndexOf("@") + 1).replace(/:\d*$/, "").replace(/\.$/, "").toLowerCase();
-    if (host !== "duckduckgo.com" && !host.endsWith(".duckduckgo.com")) {
-      return null;
+    const query = match[3] || "";
+    if (host === "duckduckgo.com" || host.endsWith(".duckduckgo.com")) {
+      return cleanQuery(lastParameter(query, "q", /[&;]/));
     }
-    for (const pair of match[3].split("&")) {
-      const equals = pair.indexOf("=");
-      if (equals > 0 && pair.slice(0, equals) === "q") {
-        const query = decodeQueryPart(pair.slice(equals + 1)).trim();
-        return query || null;
+    if (host === "wikipedia.org" || host.endsWith(".wikipedia.org")) {
+      const searched = cleanQuery(lastParameter(query, "search", "&"));
+      if (searched !== null) {
+        return searched;
       }
+      const path = WIKIPEDIA_SEARCH_PATH.exec(match[2]);
+      return path ? cleanQuery(path[1].replace(/_/g, " ")) : null;
     }
     return null;
   }
 
-  return { pageText, normalize, loadModel, tokenize, embed, scoreVector, classifyText, classifyPage, flaggedLabel, checkPage, checkSearch, searchQuery };
+  // Scores a page as checkPage does and, when its address is a search's, the search too, with the search thresholds. A
+  // page that writes a search into its address without loading, as Wikipedia's search box does, has the search judged as
+  // if it had loaded. A flagged search's label is "search:<label>", the blocked page's reason for one.
+  function checkPageAt(model, page, address) {
+    const result = checkPage(model, page);
+    const query = result.flagged === null ? searchQuery(address) : null;
+    if (query === null) {
+      return result;
+    }
+    const search = checkSearch(model, query);
+    return search.flagged === null ? result : { ...search, flagged: `search:${search.flagged}` };
+  }
+
+  return { pageText, normalize, loadModel, tokenize, embed, scoreVector, classifyText, classifyPage, flaggedLabel, checkPage, checkSearch, searchQuery, checkPageAt };
 })();
